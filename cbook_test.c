@@ -16,7 +16,8 @@ void initTxl(txl_pp c)
 	}
 	(*c)->cap = INIT_TXL_SIZE;
 	(*c)->size = 0;
-
+    
+	fileLoad(*c);
 }
 static int Txlfull(txl_p c)
 {
@@ -36,9 +37,44 @@ static int incTxl(txl_p c)
 
 	c->cap += INC_SIZE;
 	c->txllist = new_c;
-	printf("new expand room init succese");
+	printf("new expand room init succese\n");
 	return 1;
 }
+
+int fileload(txl_p c)
+{
+	FILE* fp = fopen(FILE_NAME,"rb");
+	person_t pe;
+	assert(c);
+	if(NULL == fp){
+	    perror("fopen");
+		return -2;
+	}
+	while(1){
+	    fread(&pe,sizeof(person_t),1,fp);
+		if(feof(fp)){
+			break;
+		}
+		addTxl(c,&pe);
+	}
+	fclose(fp);
+}
+
+int fileStore(txl_p c)
+{
+	int i = 0;
+	FILE* fp = fopen(FILE_NAME,"wb");
+	assert(c);
+	if(NULL == fp){
+		perror("fopen");
+		return -1;
+	}
+	for(;i<c->size;i++){
+		fwrite(c->txllist+i,sizeof(person_t),1,fp);
+	}
+	fclose(fp);
+}
+
 void addTxl(txl_p c,person_p p)
 {
 	int pos = c->size;
@@ -92,7 +128,7 @@ void showTxl(txl_p c)
 	int i = 0;
 	assert(c);
 	for(;i<c->size;i++){
-        printf("%s  |  %c  |   %d   |   %s   |   %s   |",\
+        printf("%-6s  |  %-6c  |  %-6d  |   %-12s   |   %-12s   |\n",\
 			c->txllist[i].name,c->txllist[i].sex,\
 			c->txllist[i].age,c->txllist[i].phone,c->txllist[i].addr);
 	}
