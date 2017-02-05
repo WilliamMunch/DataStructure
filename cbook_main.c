@@ -1,6 +1,6 @@
 #include"cbook.h"
 
-static void useage()
+static void usage()
 {
 	printf("Please Enter A digit in menu");
 }
@@ -10,15 +10,15 @@ static void myadd(txl_p c)
 	person_t p;
 	assert(c);
     printf("Please Enter<name, sex, age, phone, addr> ");
-	scanf("%s %c %d %s %s",p.name,&p.sex,&p.age,p.phone,p.addr);
-	addTxl(c,&p);
+	scanf("%s %s %d %s %s",p.name,p.sex,&p.age,p.phone,p.addr);
+	return addTxl(c,&p);
 }
 
-static mydelet(txl_p c)
+static void mydelet(txl_p c)
 {
 	char name[32];
 	assert(c);
-	printf("Please Enter who you what to delet ");
+	printf("Please Enter who you what to delet :");
 	scanf("%s",name);
 	delTxl(c,name);
 
@@ -59,10 +59,9 @@ int main()
 			 clearTxl(mytxl);
 			 break;
 		default: 
-			 useage();
+			 usage();
 			 break;
 		
-
 	  }
 	}
 	destoryTxl(mytxl);
