@@ -334,7 +334,24 @@ int IfCrossWithCricle(PNode pHead1,PNode pHead2)//判断两个可能带环的链表是否相交
 		}
     return 0;
 }
-    
+
+PNode Reverse(PNode pHead)
+{
+	PNode pPre = pHead;
+	PNode pCur = pHead->next;
+	PNode pnext = pCur->next;
+	if(NULL == pHead || NULL == pHead->next )
+		return 0;
+	while(pnext){
+		pCur->next = pPre;
+		pPre = pCur;
+		pCur = pnext;
+		pnext = pnext->next;
+	}
+	pCur->next = pPre;
+	pHead->next = NULL;
+	return pCur;
+}
 
 
 ///////////////////////////////////////////////
