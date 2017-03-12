@@ -353,160 +353,24 @@ PNode Reverse(PNode pHead)
 	return pCur;
 }
 
+PNode Josephcircle(PNode pHead,int n)
+{
+	PNode pCur = pHead;
+	
+	if(NULL == pHead)
+		return NULL;
+	while(pCur->next != pCur){
+		PNode pDel = pCur->next;
+		int count = n;
+		while(--count){
+			pCur = pCur->next;
+			pDel = pDel->next;
+		}
+		pCur->data = pDel->data;
+		pCur->next = pDel->next;
+		free(pDel);
+	}
+	return pCur;
+}
 
-///////////////////////////////////////////////
 
-//void FunTest1()
-//{
-//	PNode pHead;
-//	InitList(&pHead);
-//	PushBack(&pHead,1);
-//	PushBack(&pHead,2);
-//	PushBack(&pHead,3);
-//	PushBack(&pHead,4);
-//	PrintList(pHead);
-//	PrintListFromTailtoHead(pHead);
-//	printf("\n");
-//
-//	PopBack(&pHead);
-//	PrintList(pHead);
-//
-//	PopBack(&pHead);
-//	PopBack(&pHead);
-//	PrintList(pHead);
-//}
-//
-//void FunTest2()
-//{
-//	PNode pHead;
-//	PNode pos;
-//	InitList(&pHead);
-//	PushFront(&pHead,1);
-//	PushFront(&pHead,2);
-//	PushFront(&pHead,3);
-//	PushFront(&pHead,4);
-//	PrintList(pHead);
-//    
-//	pos = Find(pHead,2);
-//	Insert(pos,5);
-//	PrintList(pHead);
-//	Erase(&pHead,Find(pHead,5));
-//	PrintList(pHead);
-//	Erase(&pHead,Find(pHead,1));
-//	PrintList(pHead);
-//	
-//	PopFront(&pHead);
-//	PopFront(&pHead);
-//	PopFront(&pHead);
-//	PrintList(pHead);
-//
-//	PushBack(&pHead,1);
-//	PushBack(&pHead,2);
-//	PushBack(&pHead,3);
-//	PushBack(&pHead,4);
-//	PrintList(pHead);
-//    DeleteNotTailNode(Find(pHead,3));
-//	PrintList(pHead);
-//
-//	InsertNotHeadNode(Find(pHead,2),6);
-//	InsertNotHeadNode(Find(pHead,6),6);
-//	PrintList(pHead);
-//
-//	RemoveAll(&pHead ,6);
-//	PrintList(pHead);
-//}
-//
-//void FunTest3()
-//{
-//	PNode pHead1;
-//	PNode pHead2;
-//	PNode pTailNode;
-//	PNode pCross;
-//	InitList(&pHead1);
-//	PushBack(&pHead1,1);
-//	PushBack(&pHead1,2);
-//	PushBack(&pHead1,3);
-//	PushBack(&pHead1,4);
-//	PrintList(pHead1);
-//    
-//	InitList(&pHead2);
-//	PushBack(&pHead2,1);
-//	PushBack(&pHead2,2);
-//	PushBack(&pHead2,3);
-//	PushBack(&pHead2,4);
-//	PrintList(pHead2);
-//
-//    pTailNode = Back(pHead1);//;
-//	pTailNode->next = Find(pHead2,3);
-//	pCross = GetCrossNode( pHead1,pHead2);
-//	PrintList(pHead1);
-//	PrintList(pCross);
-//
-//}
-//
-//FunTest4()
-//{
-//	PNode pHead1;
-//	PNode pTailNode;
-//	PNode pEnter;
-//	PNode pMeetNode;
-//    InitList(&pHead1);
-//	PushBack(&pHead1,1);
-//	PushBack(&pHead1,2);
-//	PushBack(&pHead1,3);
-//	PushBack(&pHead1,4);
-//	PushBack(&pHead1,5);
-//	PushBack(&pHead1,6);
-//	PushBack(&pHead1,7);
-//	PushBack(&pHead1,8);
-//	pTailNode = Back(pHead1);
-//	pTailNode->next = Find(pHead1,4);
-//	pMeetNode = HasCircle(pHead1);
-//    pEnter = GetEnterNode(pHead1,HasCircle(pHead1));
-//    printf("EnterNode is :%d", pEnter->data);
-//	printf("Circlelen is :%d",GetCircleLen(HasCircle(pHead1)));
-//
-//}
-//
-//void FunTest5()
-//{
-//    PNode pHead1;
-//	PNode pHead2;
-//	PNode pTailNode1;
-//	PNode pTailNode2;
-//	//PNode pEnter;
-//	//PNode pMeetNode;
-//    InitList(&pHead1);
-//	PushBack(&pHead1,1);
-//	PushBack(&pHead1,2);
-//	PushBack(&pHead1,3);
-//	PushBack(&pHead1,4);
-//	PushBack(&pHead1,5);
-//	PushBack(&pHead1,6);
-//	PushBack(&pHead1,7);
-//	PushBack(&pHead1,8);
-//	PushBack(&pHead2,1);
-//	PushBack(&pHead2,2);
-//	PushBack(&pHead2,3);
-//	PushBack(&pHead2,4);
-//	PushBack(&pHead2,5);
-//	PushBack(&pHead2,6);
-//	PushBack(&pHead2,7);
-//	PushBack(&pHead2,8);
-//	pTailNode1 = Back(pHead1);
-//	pTailNode1->next = Find(pHead1,4);
-//	pTailNode2 = Back(pHead2);
-//	pTailNode2->next = Find(pHead2,3);
-//	if(2 == IfCrossWithCricle(pHead1,pHead2))
-//		printf("OK");
-//}
-//
-//int main()
-//{
-//	//FunTest1();
-//	//FunTest2();
-//	//FunTest3();
-//	FunTest5();
-//	system("pause");
-//	return 0;
-//}
