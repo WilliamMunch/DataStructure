@@ -45,28 +45,28 @@ public:
 		_CreateBinaryTree(_pRoot, arr, size, index, invalid);
 	}
 
-	Node* _CopyBinaryTee(Node* pRoot)
+	Node* _CopyBinaryTree(Node* pRoot)
 	{
 		Node* pNewRoot = NULL;
 		if (pRoot){
 			pNewRoot = new Node(pRoot->_value);
-			pNewRoot->_pleft = _CopyBinaryTee(pRoot->_pleft);
-			pNewRoot->_pright = _CopyBinaryTee(pRoot->_pright);
+			pNewRoot->_pleft = _CopyBinaryTree(pRoot->_pleft);
+			pNewRoot->_pright = _CopyBinaryTree(pRoot->_pright);
 		}
 		return pNewRoot;
 	}
 
-	BinaryTree(const Node& bt)
+	BinaryTree(const BinaryTree<T>& bt)
 	{
 		_pRoot = _CopyBinaryTree(bt._pRoot);
-	} 
+	}  
 
-	/*~BinaryTree()
+	~BinaryTree()
 	{
 		_DestoryBinaryTree(_pRoot);
-	}*/
+	}
 
-	void _DestoryBinaryTree(Node* pRoot)
+	void _DestoryBinaryTree(Node*& pRoot)
 	{
 		if (pRoot){
 			_DestoryBinaryTree(pRoot->_pleft);
@@ -94,7 +94,7 @@ public:
 		
 	}
 
-	Node& operator = (const Node& bt)
+	BinaryTree<T>& operator = (const BinaryTree<T>& bt)
 	{
 		if (this != &bt){
 			_DestoryBinaryTree(_pRoot);
@@ -233,6 +233,7 @@ public:
 			}
 			pCur = pCur->_pright;
 		}
+		cout << endl;
 	}
 
 	void Post_Order()
@@ -256,6 +257,7 @@ public:
 			}
 			else{ pCur = pTop->_pright; }
 		}
+		cout << endl;
 	}
 
 
@@ -263,21 +265,3 @@ public:
 private:
 	Node* _pRoot;
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
