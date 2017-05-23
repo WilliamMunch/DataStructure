@@ -1,5 +1,5 @@
 #pragma once
-
+//#include"BSTreeiterator.cpp"
 #include<iostream>
 #include<windows.h>
 
@@ -16,7 +16,7 @@ public:
 	, _value(value)
 	{}
 
-private:
+//protected:
 	BSTNode<K, V>* _pLeft;
 	BSTNode<K, V>* _pRight;
 	K _key;
@@ -46,9 +46,9 @@ public:
 	{
 		Node* pNewRoot = NULL;
 		if (pRoot){
-			pNewRoot = new Node(pRoot->_value);
-			pNewRoot->_pleft = _CopyBinaryTee(pRoot->_pleft);
-			pNewRoot->_pright = _CopyBinaryTee(pRoot->_pright);
+			pNewRoot = new Node(pRoot->_key,pRoot->_value);
+			pNewRoot->_pLeft = _CopyBinaryTee(pRoot->_pLeft);
+			pNewRoot->_pRight = _CopyBinaryTee(pRoot->_pRight);
 		}
 		return pNewRoot;
 	}
@@ -66,8 +66,8 @@ public:
 	void _DestoryBinarySTree(Node*& pRoot)
 	{
 		if (pRoot){
-			_DestoryBinarySTree(pRoot->_pleft);
-			_DestoryBinarySTree(pRoot->_pright);
+			_DestoryBinarySTree(pRoot->_pLeft);
+			_DestoryBinarySTree(pRoot->_pRight);
 			delete pRoot;
 			pRoot = NULL;
 		}
@@ -75,7 +75,7 @@ public:
 
 	bool Insert(const K& key, const V& value)
 	{
-		if (NULL = _pRoot){
+		if (NULL == _pRoot){
 			_pRoot = new Node(key, value);
 			return true;
 		}
@@ -127,7 +127,7 @@ public:
 		return pCur;
 	}
 
-	bool Remove(const K& key)
+	/*bool Remove(const K& key)
 	{
 		Node* pCur = _pRoot;
 		Node* pParent = pCur;
@@ -152,6 +152,7 @@ public:
 			}
 			else break;
 		}
+
 		if (NULL == pCur)
 			return false;
 		if (pCur)
@@ -165,8 +166,9 @@ public:
 				}
 				else
 					_pRoot = pCur->_pRight;
+				delete pCur;
 			}
-			else if (NULL = pCur->_pRight){
+			else if (NULL == pCur->_pRight){
 				if (pCur != _pRoot){
 					if (pParent->_pLeft = pCur)
 						pParent->_pLeft = pCur->_pLeft;
@@ -175,6 +177,7 @@ public:
 				}
 				else
 					_pRoot = pCur->_pLeft;
+				delete pCur;
 			}
 			else{
 				pParent = pCur;
@@ -190,13 +193,121 @@ public:
 				else
 					pParent->_pRight = pDel->_pRight;
 				pCur = pDel;
-
+				delete pDel;
+				pDel = NULL;
 			}
-			delete pDel;
-			pDel = NULL;
+			
+			return true;
 		}
+		return false;
+	}
+*/
+    bool Remove(const K& key)
+	{
+		Node* pRoot = _pRoot;
+		bool ret = _Remove(key, pRoot);
+		return ret;
+	}
+	bool _Remove(const K& key,Node* pCur)
+	{
+		//Node* pCur = _pRoot;
+		Node* pParent = pCur;
+		if (NULL == _pRoot)
+			return false;
+		if (NULL == _pRoot->_pLeft && NULL == _pRoot->_pRight && key == _pRoot->_key)
+		{
+			delete _pRoot;
+			_pRoot = NULL;
+			return true;
+		}
+	
+		if (pCur)
+		{
+			if (NULL == pCur->_pLeft){
+				if (pCur != _pRoot){
+					if (pParent->_pRight == pCur)
+						pParent->_pRight = pCur->_pRight;
+					else
+						pParent->_pLeft = pCur->_pRight;
+				}
+				else
+					_pRoot = pCur->_pRight;
+				delete pCur;
+			}
+			else if (NULL == pCur->_pRight){
+				if (pCur != _pRoot){
+					if (pParent->_pLeft = pCur)
+						pParent->_pLeft = pCur->_pLeft;
+					else
+						pParent->_pRight = pCur->_pLeft;
+				}
+				else
+					_pRoot = pCur->_pLeft;
+				delete pCur;
+			}
+			else{
+				pParent = pCur;
+				Node* pDel = pCur->_pRight;
+				while (pDel->_pRight){
+					pParent = pDel;
+					pDel = pDel->_pLeft;
+				}
+				pCur->_key = pDel->_key;
+				pCur->_value = pDel->_value;
+				if (pParent->_pLeft == pDel)
+					pParent->_pLeft = pDel->_pRight;
+				else
+					pParent->_pRight = pDel->_pRight;
+				pCur = pDel;
+				delete pDel;
+				pDel = NULL;
+			}
 
+			return true;
+		}
+		if (key < pCur->_key)
+		bool ret = _Remove(key, pCur->_pLeft);
+		else
+		bool ret = _Remove(key, pCur->_pRight);
+		return false;
+	}
+
+	void MidOrder()
+	{
+		cout << "MidOrder" << endl;
+		_MidOrder(_pRoot);
+		cout << endl;
 	}
 protected:
-	Node _pRoot;
+
+	void _MidOrder(Node* pRoot)
+	{
+		if (pRoot){
+			_MidOrder(pRoot->_pLeft);
+			cout << pRoot->_key << " ";
+			_MidOrder(pRoot->_pRight);
+		}
+	}
+protected:
+	Node* _pRoot;
 };
+
+void Test()
+{
+	int arr[] = { 5, 3, 7, 4, 9, 6, 2, 8, 1, 0 };
+	BSTree<int,int> tree;
+	for (int i = 0; i < 10;i++)
+	   tree.Insert(arr[i], i);
+	tree.MidOrder();
+	tree.Remove(5);
+	tree.MidOrder();
+
+}
+
+int main()
+{
+	
+	Test();
+	system("pause");
+	return 0;
+}
