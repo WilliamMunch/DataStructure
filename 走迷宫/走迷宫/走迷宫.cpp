@@ -1,10 +1,12 @@
+#define _CRT_SECURE_NO_WARNINGS 1
 #include"Stack.cpp"
 #include<stack>
 #include<iostream>
 #include<stdlib.h>
+#include<assert.h>
 
-#define MAX_ROW 10
-#define MAX_COL 10
+//#define MAX_ROW 10
+//#define MAX_COL 10
 
 using namespace std;
 
@@ -18,23 +20,34 @@ struct Seat
 	int _y;
 };
 
+template<size_t N, size_t M>
 class Maze
 {
 public:
-	Maze(int arr[][MAX_COL],int row, int col)
+	Maze(int** arr,FILE* fp)
+		:_maze(arr)
+		, _row(N)
+		, _col(M)
 	{
-		for (int i = 0; i < row; ++i){
-			for (int j = 0; j < col; ++j){
-				maze[i][j] = arr[i][j];
+		assert(_maze);
+		assert(fp);
+		for (size_t i = 0; i < _row; ++i){
+			for (size_t j = 0; j < _col;){
+				char ch = fgetc(fp);
+				if (ch == '0' || ch == '1'){
+					_maze[i][j] = ch - '0';
+					++j;
+				}
 			}
 		}
+		fclose(fp);
 	}
 
 	void PrintMaze()
 	{
-		for (int i = 0; i < MAX_ROW; ++i){
-			for (int j = 0; j < MAX_COL; ++j){
-				cout << maze[i][j] << " ";
+		for (int i = 0; i < _row; ++i){
+			for (int j = 0; j < _col; ++j){
+				cout << _maze[i][j] << " ";
 			}
 			cout << endl;
 		}
@@ -43,129 +56,126 @@ public:
 
 	bool IsPass(const Seat& s)
 	{
-		if (s._x < 0 || s._y < 0 || s._x > MAX_ROW || s._y > MAX_COL)
-			return true;
-		if (1 == maze[s._x][s._y])
-			return true;
+		if (s._x < 0 || s._y < 0 || s._x > _row || s._y > _col)
+			return true; //已走出迷宫 直接返回
+		if (1 == _maze[s._x][s._y])
+			return true;//此路通
 		return false;
 	}
-
+	//递归解法
 	bool GetPath(Seat s)
 	{
-		if (s._x < 0 || s._y < 0 || s._x >= MAX_ROW || s._y >= MAX_COL)
-			return true;
-		if (!IsPass(s))
-			return false;
+		if (s._x < 0 || s._y < 0 || s._x >= _row || s._y >= _col)
+			return true;//此处为递归出口
+		Seat cur = s;
+		Seat next = cur;
+		_maze[next._x][next._y] = 2;//是通路 标记为2
 
-		stack<Seat> con;
-		con.push(s);
-
-		while (!con.empty()){
-			Seat cur = con.top();
-			
-			if (cur._x < 0 || cur._x >= MAX_ROW ||
-				cur._y < 0 || cur._y >= MAX_COL)
-			{
+		next._x -= 1;
+		if (IsPass(next)){
+			if (GetPath(next)){
 				return true;
 			}
-			maze[cur._x][cur._y] = 2;
-			Seat next(cur);
-			
-			//next = cur;
-			next._x -= 1;
-			if (IsPass(next)){
-				con.push(next);
-				continue;
-			}
-			
-			next = cur;
-			next._y -= 1;
-			if (IsPass(next)){
-				con.push(next);
-				continue;
-			}
-
-			next = cur;
-			next._x += 1;
-			if (IsPass(next)){
-				con.push(next);
-				continue;
-			}
-
-			next = cur;
-			next._y += 1;
-			if (IsPass(next)){
-				con.push(next);
-				continue;
-			}
-						
-			maze[cur._x][cur._y] = 3;
-			con.pop();
 		}
-		return false;
+
+		next = cur;
+		next._y -= 1;
+		if (IsPass(next)){
+			if (GetPath(next)){//查找这条通路的后续通路 如果返回true(69行)则说明已找到出口\
+				这时本层也返回true 最终返回所有层函数 如果返回false(107行) 继续在本层向\
+				下执行。在其他方向寻找通路。
+				return true;
+			}
+		}
+
+		next = cur;
+		next._x += 1;
+		if (IsPass(next)){
+			if (GetPath(next)){
+				return true;
+			}
+		}
+
+		next = cur;
+		next._y += 1;
+		if (IsPass(next)){
+			if (GetPath(next)){
+				return true;
+			}
+		}
+		//这一结点没有后续通路 程序走到这里
+		_maze[next._x][next._y] = 3; //后续为死路的结点标记为三
+		return false;//没有通路则返回flase
 	}
-	/*int GetPath(Seat s){
-		stack<Seat> con;
-		con.push(s);
-		Seat cur = con.top();
-		Seat next(cur);
-		return _GetPath(con,cur,next);
-	}*/
-	
-	//int _GetPath(stack<Seat>& con,Seat cur,Seat next)
+	//循环解法
+	//bool GetPath(Seat s)
 	//{
-	//	int count = 0;
-	//	//int ret = 0;
-	//	//cur = con.push(s);
-	//	cur = con.top();
-	//	next = cur;
-	//	
-	//	if (count < _GetPath(con, cur, next))
-	//		count = con.size();
+	//	if (s._x < 0 || s._y < 0 || s._x >= _row || s._y >= _col)
+	//		return true;
+	//	if (!IsPass(s))
+	//		return false;
 
-	//	maze[cur._x][cur._y] = 2;
-	//	
-	//	next._x -= 1;
-	//	if (IsPass(next)){
-	//		con.push(next);
-	//		_GetPath(con, cur, next);
+	//	stack<Seat> con;
+	//	con.push(s);//先将第一步通路入栈
+
+	//	while (!con.empty()){
+	//		Seat cur = con.top();//取栈顶元素，实际上是去刚刚到达的通路
+	//		
+	//		if (cur._x < 0 || cur._x >= _row ||
+	//			cur._y < 0 || cur._y >= _col)
+	//		{
+	//			return true;
+	//		}
+	//		_maze[cur._x][cur._y] = 2;
+	//		Seat next(cur);
+	//		
+	//		//next = cur;
+	//		next._x -= 1;
+	//		if (IsPass(next)){
+	//			con.push(next);//是通路的话就入栈。
+	//			continue;
+	//		}
+	//		
+	//		next = cur;
+	//		next._y -= 1;
+	//		if (IsPass(next)){
+	//			con.push(next);
+	//			continue;
+	//		}
+
+	//		next = cur;
+	//		next._x += 1;
+	//		if (IsPass(next)){
+	//			con.push(next);
+	//			continue;
+	//		}
+
+	//		next = cur;
+	//		next._y += 1;
+	//		if (IsPass(next)){
+	//			con.push(next);
+	//			continue;
+	//		}
+	//		//上一条到达的通路 后续是死路 代码跑到现在位置上			
+	//		_maze[cur._x][cur._y] = 3;//思路标记为3.
+	//		con.pop();把之前走过的后续是死路的结点出栈
+	        //循环继续 从上一条走过的结点重新找通路
 	//	}
-
-	//	next = cur;
-	//	next._y -= 1;
-	//	if (IsPass(next)){
-	//		con.push(next);
-	//		_GetPath(con, cur, next);
-	//	}
-
-	//	next = cur;
-	//	next._y += 1;
-	//	if (IsPass(next)){
-	//		con.push(next);
-	//		_GetPath(con, cur, next);
-	//	}
-
-	//	next = cur;
-	//	next._x += 1;
-	//	if (IsPass(next)){
-	//		con.push(next);
-	//		_GetPath(con, cur, next);
-	//	}
-	//	maze[cur._x][cur._y] = 3;
-	//	con.pop();
-	//	if (cur._x < 0 || cur._y < 0 || cur._x >= MAX_ROW || cur._y >= MAX_COL)
-	//		return con.size();
-	//	else
-	//		return 0;
-	//	return 0;
-
+	//	return false;
 	//}
+	
 
 	~Maze()
-	{}
+	{
+		for (size_t i = 0; i < _row; ++i)
+				delete[] _maze[i];
+			delete[] _maze;
+	}
 
 private:
-	int maze[MAX_ROW][MAX_COL];
+	int** _maze;
+	int _row;
+	int _col;
 
 };
 
@@ -175,33 +185,54 @@ void Auto_two_dimension_arry()
 	for (size_t i = 0; i < 10; ++i){
 		p[i] = new int[10];
 	}
-	for (size_t j = 0; j < 10; ++j){
-		delete[] p[j];
-	}
+	
+	//for (size_t j = 0; j < 10; ++j){
+	//	delete[] p[j];
+	//}
 
-	delete[] p;
+	//delete[] p;
 }
 
+void Test()
+{
+	FILE* fp = fopen("Maze.txt", "r");
+	/*int row = 0;
+	int col = 0;
+	fscanf(fp, "%d %d", &row, &col);
+	int start_x = 0;
+	int start_y = 0;
+	fscanf(fp, "%d %d", &start_x, &start_y);*/
+	int** p = new int*[10];
+	for (size_t i = 0; i < 10; ++i){
+		p[i] = new int[10];
+	}
+
+	Maze<10,10> m(p,fp);
+	m.PrintMaze();
+	m.GetPath(Seat(9, 3));
+	m.PrintMaze();
+}
 
 int main()
 {
-	int maparr[MAX_ROW][MAX_COL] = {
-		{ 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 },
-		{ 0, 0, 1, 1, 1, 1, 1, 0, 0, 0 },
-		{ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 },
-		{ 1, 1, 1, 0, 1, 0, 0, 0, 0, 0 },
-		{ 0, 0, 1, 0, 1, 0, 0, 0, 0, 0 },
-		{ 0, 0, 1, 1, 1, 0, 0, 0, 0, 0 },
-		{ 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 },
-		{ 0, 0, 1, 1, 0, 0, 0, 0, 0, 0 },
-		{ 0, 0, 0, 1, 1, 1, 1, 0, 0, 0 },
-		{ 0, 0, 0, 1, 0, 0, 1, 0, 0, 0 }
-	};
-	Maze m(maparr,MAX_ROW, MAX_COL);
-	m.PrintMaze();
-	m.GetPath(Seat(9,3));
-	//cout << "最短路径为：" << m.GetPath(Seat(9, 3)) << endl;
-	m.PrintMaze();
+	//int maparr[MAX_ROW][MAX_COL] = {
+	//	{ 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 },
+	//	{ 0, 0, 1, 1, 1, 1, 1, 0, 0, 0 },
+	//	{ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 },
+	//	{ 1, 1, 1, 0, 1, 0, 0, 0, 0, 0 },
+	//	{ 0, 0, 1, 0, 1, 0, 0, 0, 0, 0 },
+	//	{ 0, 0, 1, 1, 1, 0, 0, 0, 0, 0 },
+	//	{ 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 },
+	//	{ 0, 0, 1, 1, 0, 0, 0, 0, 0, 0 },
+	//	{ 0, 0, 0, 1, 1, 1, 1, 0, 0, 0 },
+	//	{ 0, 0, 0, 1, 0, 0, 1, 0, 0, 0 }
+	//};
+	//Maze m(maparr,MAX_ROW, MAX_COL);
+	//m.PrintMaze();
+	//m.GetPath(Seat(9,3));
+	////cout << "最短路径为：" << m.GetPath(Seat(9, 3)) << endl;
+	//m.PrintMaze();
+	Test();
 	system("pause");
 	return 0;
 }
