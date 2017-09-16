@@ -3,6 +3,8 @@
 #include<iostream>
 #include<queue>
 #include<stack>
+#include<assert.h>
+#include<list>
 
 using namespace std;
 
@@ -24,15 +26,28 @@ class BinaryTree
 {
 	typedef BinaryTreeNode<T> Node;
 public:
-	void _CreateBinaryTree(Node*& pRoot, const T arr[], size_t size, size_t& index, const T invalid)
+	//void  _CreateBinaryTree1(Node*& pRoot, const T arr[], size_t size, size_t& index, const T invalid)
+	//{
+	//	if (index < size && invalid != arr[index])
+	//	{
+	//		pRoot = new Node(arr[index]);
+	//		_CreateBinaryTree(pRoot->_pleft, arr, size, ++index, invalid);
+	//		_CreateBinaryTree(pRoot->_pright, arr, size, ++index, invalid);
+
+	//	}
+	//}
+
+	Node*  _CreateBinaryTree2(const T arr[], size_t size, size_t& index, const T invalid)
 	{
+		Node* pRoot = NULL;
 		if (index < size && invalid != arr[index])
 		{
 			pRoot = new Node(arr[index]);
-			_CreateBinaryTree(pRoot->_pleft, arr, size, ++index, invalid);
-			_CreateBinaryTree(pRoot->_pright, arr, size, ++index, invalid);
+			pRoot->_pleft = _CreateBinaryTree2( arr, size, ++index, invalid);
+			pRoot->_pright = _CreateBinaryTree2( arr, size, ++index, invalid);
 
 		}
+		return pRoot;
 	}
 		 
 	BinaryTree()
@@ -41,11 +56,13 @@ public:
 
 	BinaryTree(const T arr[], size_t size,const T& invalid)
 	{
+		assert(arr);
 		size_t index = 0;
-		_CreateBinaryTree(_pRoot, arr, size, index, invalid);
+		//_CreateBinaryTree1(_pRoot, arr, size, index, invalid);
+		_pRoot = _CreateBinaryTree2(arr, size, index, invalid);
 	}
 
-	Node* _CopyBinaryTree(Node* pRoot)
+	Node*  _CopyBinaryTree(Node* pRoot)
 	{
 		Node* pNewRoot = NULL;
 		if (pRoot){
@@ -152,36 +169,72 @@ public:
 			cout << pRoot->_value <<" ";
 		}
 	}
+	//层序遍历
+	
 
-	void levelOrder()
+	void level_Order()
 	{
-		if (NULL == _pRoot)
-			return ;
 		queue<Node*> q;
+		if (_pRoot == NULL)
+			return;
 		q.push(_pRoot);
-		while (!q.empty())
-		{
-			Node* pCur = q.front();
+		while (!q.empty()){
+			Node* pcur = q.front();
 			q.pop();
-			if (pCur->_pleft)
-				q.push(pCur->_pleft);
-			if (pCur->_pright)
-				q.push(pCur->_pright);
-			cout << pCur->_value << " ";
+			if (pcur->_pleft != NULL)
+				q.push(pcur->_pleft);
+			if (pcur->_pright != NULL)
+				q.push(pcur->_pright);
+			cout << pcur->_value << " ";
 		}
 		cout << endl;
 	}
+	//判断一棵二叉树是否是完全二叉树
+	bool IsTotalTree()
+	{
+		queue<Node*> q;
+		bool flag = true;
+		if (_pRoot == NULL)
+ 			return true;
+		q.push(_pRoot);
+		while (!q.empty()){
+			Node* pcur = q.front();
+			q.pop();
+			if (pcur->_pleft != NULL){
+				q.push(pcur->_pleft);
+				if (flag == false){
+					return false;
+				}
+			}
+			else{
+				flag = false;
+			}
+			if (pcur->_pright != NULL){
+				q.push(pcur->_pright);
+				if (flag == false){
+					return false;
+				}
+
+			}
+			else{
+				flag = false;
+			}
+		}
+		return true;
+
+  	}
+
 	//求二叉树的高度
 	size_t TreeHeight()
 	{
 		return _TreeHeight(_pRoot);
 	}
-	size_t _TreeHeight(Node* pRoot)
+	size_t _TreeHeight(Node*& pRoot)
 	{
 		if (NULL == pRoot)
 			return 0;
-		if (NULL == pRoot->_pleft && NULL == pRoot->_pright)
-			return 1;
+		/*if (NULL == pRoot->_pleft && NULL == pRoot->_pright)
+			return 1;*/
 		size_t LeftHeight  = _TreeHeight(pRoot->_pleft);
 		size_t RightHeight = _TreeHeight(pRoot->_pright);
 		
@@ -189,27 +242,52 @@ public:
  
 	}
 	//非递归遍历法
+
+	//把问题分成 树的左路 与 树的其他部分 两块
+	//先将节点压栈 遍历后再出栈 以此模仿递归
 	void Pre_Order()
 	{
-		cout << "Pre_Order" << endl;
-		if (NULL == _pRoot)
-			return;
 		stack<Node*> s;
-		s.push(_pRoot);
-		while (!s.empty())
-		{
-			Node* pTop = s.top();
-			cout << pTop->_value << " ";
+		Node* cur = _pRoot;
+		if (_pRoot == NULL)
+			return;
+		
+		while (cur || !s.empty()){
+			while (cur){
+				cout << cur->_value << " ";
+				s.push(cur);
+				cur = cur->_pleft;
+			}
+			Node* top = s.top();//top 的左边不可能有还没遍历的节点
 			s.pop();
-			if (NULL != pTop->_pright)
-				s.push(pTop->_pright);
-			if (NULL != pTop->_pleft)
-				s.push(pTop->_pleft);
+			if (top->_pright != NULL)
+				cur = top->_pright;
 		}
 		cout << endl;
 	}
-
+	//相较于先序遍历 只需要改变访问节点的时机
 	void Mid_Order()
+	{
+		Node* cur = _pRoot;
+		stack<Node*> s;
+		if (_pRoot == NULL)
+			return;
+		while (cur || !s.empty()){
+			while (cur){
+				s.push(cur);
+				cur = cur->_pleft;
+			}
+			Node* top = s.top();
+			cout << top->_value << " ";
+			s.pop();
+
+			if (top->_pright != NULL)
+				cur = top->_pright;
+		}
+		cout << endl;
+ 	}
+
+	/*void Mid_Order()
 	{
 		cout << "Mid_Order" << endl;
 		if (NULL == _pRoot)
@@ -234,34 +312,118 @@ public:
 			pCur = pCur->_pright;
 		}
 		cout << endl;
-	}
+	}*/
+
 
 	void Post_Order()
 	{
-		cout << "Post_Order" << endl;
-		if (NULL == _pRoot)
-			return;
+		Node* cur = _pRoot;
+		Node* prev = NULL;//用prev记录下来已经遍历过的节点
 		stack<Node*> s;
-		Node* pCur = _pRoot;
-		Node* prev = _pRoot;
-		while (pCur || !s.empty()){
-			while (pCur){
-				s.push(pCur);
-				pCur = pCur->_pleft;
+		while (cur || !s.empty()){
+			while (cur){
+				s.push(cur);
+				cur = cur->_pleft;
 			}
-			Node* pTop = s.top();
-			if (NULL == pTop->_pright || prev == pTop->_pright){
-				cout << pTop->_value << " ";
+			Node* top = s.top();
+			if (top->_pright == NULL || top->_pright == prev){
+				//为防止死循环 已遍历的右子树不会再被遍历
+				cout << top->_value << " ";
 				s.pop();
-				prev = pTop;
+				prev = top;
 			}
-			else{ pCur = pTop->_pright; }
+			else{//遍历未被遍历的右子树
+				cur = top->_pright;
+			}
 		}
 		cout << endl;
 	}
 
+	//求二叉树的镜像
+	void _Mirror(Node* pRoot)
+	{
+		if (pRoot == NULL)
+			return;
+		std::swap(pRoot->_pleft, pRoot->_pright);
+		_Mirror(pRoot->_pleft);
+		_Mirror(pRoot->_pright);
+	}
+
+	void Mirror()
+	{
+		_Mirror(_pRoot);
+	}
+
+	void  _Size(Node* pRoot,int& count)
+	{
+		
+		if (pRoot == NULL )
+			return ;
+		
+	    _Size(pRoot->_pleft, count);
+		_Size(pRoot->_pright,count);
+		count++;
+		/*if (pRoot == NULL)
+			return 0;
+		return _Size(pRoot->_pleft) + _Size(pRoot->_pright) + 1;*/
+
+	}
+
+	size_t Size()
+	{
+		int i = 0;
+		_Size(_pRoot,i);
+		return i;
+	}
+
+	size_t _k_nodes(Node*& pRoot, size_t k)
+	{
+		if (pRoot == NULL)
+			return 0;
+		if (k == 1)
+			return 1;
+		return _k_nodes(pRoot->_pleft, k-1) + _k_nodes(pRoot->_pright,k-1);
+	}
+
+	size_t k_nodes(size_t k)
+	{
+		if (k < 0)
+			return 0;
+	
+		return _k_nodes(_pRoot, k);
+	}
+
+	//求二叉树两个结点的最低公共父节点（辅助内存）
+
+
+
+	//求二叉树两个结点的最低公共父节点（递归）
+
+	//判断一棵树是不是另外一棵树的子树
 
 
 private:
 	Node* _pRoot;
 };
+
+int main()
+{
+	char arr[] = {'1','2','3','#','#','4','#','#','5','6'}; 
+
+	BinaryTree<char> BiTree(arr,sizeof(arr)/sizeof(arr[0]),'#');
+	BiTree.Post_Order();
+	BiTree.Pre_Order();
+	BiTree.Mid_Order();
+	BiTree.level_Order();
+	if (BiTree.IsTotalTree())
+		cout << "shi" << " ";
+	else
+		cout << "no" << " ";
+	//BiTree.Mirror();
+	//BiTree.PreOrder();
+	//cout << BiTree.Size() << endl;
+	//cout << BiTree.TreeHeight() << endl;
+	//cout << BiTree.k_nodes(3) << endl;
+	system("pause");
+	return 0;
+}
