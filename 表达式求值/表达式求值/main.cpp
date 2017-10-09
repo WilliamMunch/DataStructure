@@ -31,9 +31,11 @@ void Quit()
 void Test()
 {
 	menu();
-	//char prefixion[] = "";
-	//scanf("%s", prefixion);
-	char prefixion[] = "12 * (3 + 4) - 6 + 8 / 2 ";//保存前缀表达式
+	//string prefixion;
+	//char str[] = "";
+	//scanf("%s", str);
+	//prefixion = prefixion + str;
+	char prefixion[] = "12 * (3 + 4) - 6 + 8 / 3 ";//保存前缀表达式
 	//char prefixion[] = "12 * (3 + 4)";
 	char suffix[25] = {};//保存后缀表达式
 	int res = SuffixionToValue(suffix, prefixion);
