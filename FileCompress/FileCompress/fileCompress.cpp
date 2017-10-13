@@ -3,10 +3,10 @@
 #pragma warning(disable:4996)
 
 struct CharInfo{
-	int _count;
-	string code;
+	int _count = 0;
+	string code = "";
 	char ch;
-
+		
 	bool operator != (const CharInfo& s)
 	{
 		return _count != s._count;
@@ -31,11 +31,11 @@ class FileCompress
 public:
 	void Compression(char* file)
 	{
-		CharInfo info[256];
 		FILE* fout = fopen(file, "r");
 		char ch = fgetc(fout);//从文件file中读取一个字符
 		while (ch != EOF){
-			info[(unsigned char)ch]._count++;
+			_info[(unsigned char)ch]._count++;
+			_info[(unsigned char)ch].ch = ch;
 			ch = fgetc(fout);
 		}//统计原文件中每个字符的个数 统计结束后文件指针指向文件结尾
 
@@ -50,11 +50,11 @@ public:
 		char value = 0;
 		int pos = 0;
 		string compressFile = file;
-		compressFile += "Huffman";//构建压缩文件名
+		compressFile += "huffman.txt";//构建压缩文件名
 		FILE* fin = fopen(compressFile.c_str(), "w");
 		while (ch != EOF)
 		{
-			string& code = info[(unsigned char)ch].code;
+			string& code = _info[(unsigned char)ch].code;
 			for (size_t i = 0; i < code.size(); i++){
 				if (code[i] == '0')
 					value &= ~(1 << pos);
@@ -69,8 +69,8 @@ public:
 					value = 0;
 					pos = 0;
 				}
-				ch = fgetc(fout);
 			}
+			ch = fgetc(fout);
 		}
 		if (pos != 0){//处理原文件末尾转换的哈夫曼编码凑不够一个字符八位的情况
 					  //（后几位以本来的零连同整个字符写入压缩文件）
@@ -86,9 +86,9 @@ public:
 		//构建解压后还原文件名
 		FILE* fout = fopen(file, "r");
 		string uncompressFile = file;
-		size_t pos = uncompressFile.rfind('.');
+		size_t pos = uncompressFile.rfind('h');
 		uncompressFile.erase(pos, uncompressFile.size() - pos);
-		uncompressFile += "unhuffman";
+		uncompressFile += "unhuffman.txt";
 		FILE* fin = fopen(uncompressFile.c_str(), "w");
 		//重建Huffman树
 		CharInfo invalid;
@@ -104,21 +104,21 @@ public:
 			for (size_t pos = 0; pos <= 7; ++pos)
 			{
 				if (value & (1 << pos))
-					cur = cur->_left;
-				else
 					cur = cur->_right;
+				else
+					cur = cur->_left;
 				if (NULL == cur->_left && NULL == cur->_right){
 					fputc(cur->_w.ch, fin);
 					if (--count == 0){
 						break;
 					}
+					cur = tree.GetRoot();
 				}
 			}
-			cur = tree.GetRoot();
 			value = fgetc(fout);
-			
 		}
-
+		fclose(fin);
+		fclose(fout);
 	}
 		
 protected:
@@ -135,9 +135,9 @@ protected:
 		{
 			Node* cur = root;
 			Node* parent = cur->_parent;
+			string& code = _info[(unsigned char)root->_w.ch].code;//巧用引用增加代码可读性和效率
 			while (parent)
 			{
-				string& code = _info[(unsigned char)root->_w.ch].code;//巧用引用增加代码可读性和效率
 				if (cur == parent->_left)
 					code.push_back('0');
 				else
@@ -145,13 +145,13 @@ protected:
 
 				cur = parent;
 				parent = cur->_parent;
-
-				reverse(code.begin(), code.end());
-				return;
 			}
+			reverse(code.begin(), code.end());
+			return;
 		}
 		_GetHuffmanCode(root->_left);
 		_GetHuffmanCode(root->_right);
+		
 	}
 
 	//二岔链获取哈夫曼编码
@@ -161,7 +161,7 @@ protected:
 			return;
 
 		if (NULL == root->_left && NULL == root->_right){
-			_info[root->_w.ch].code = code;
+			_info[(unsigned char)root->_w.ch].code = code;
 			return;
 		}
 
@@ -174,6 +174,7 @@ int main()
 {
 	FileCompress a;
 	a.Compression("file.txt");
+	a.Uncompression("file.txthuffman.txt");
 	system("pause");
 	return 0;
 }

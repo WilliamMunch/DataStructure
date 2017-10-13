@@ -15,8 +15,6 @@ struct HuffmanTreeNode
 	{}
 };
 
-
-
 template<class	W>
 class HuffmanTree
 {
@@ -27,11 +25,11 @@ public:
 
 	HuffmanTree(W* arr, size_t n, const W& invalid)
 	{
-	
+		assert(arr && n > 0);
 		struct NodeCompare{
 			bool operator () (const Node* l, const Node* r)
 			{
-				return l->_w < r->_w;
+				return l->_w._count < r->_w._count;
 			}
 		};
 		Heap<Node*,NodeCompare> minhp;
@@ -40,7 +38,6 @@ public:
 				minhp.Push(new Node(arr[i]));
 			}
 		}
-		
 		while (minhp.Size() > 1){
 			Node* left = minhp.Top();
 			minhp.Pop();
@@ -61,7 +58,22 @@ public:
 		return _root;
 	}
 
+	~HuffmanTree()
+	{
+		_Destory(_root);
+	}
+
 private:
+	void _Destory(Node* root)
+	{
+		if (NULL == root){
+			return;
+		}
+		_Destory(root->_left);
+		_Destory(root->_right);
+		delete root;
+		root = NULL;
+	}
 	Node* _root;
 };
 
