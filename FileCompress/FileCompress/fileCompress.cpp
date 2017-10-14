@@ -25,13 +25,18 @@ struct CharInfo{
 	}
 };
 
+struct ConfigInfo{
+	char ch;
+	long long _count;
+};
+
 class FileCompress
 {
 	typedef HuffmanTreeNode<CharInfo> Node;
 public:
 	void Compression(char* file)
 	{
-		FILE* fout = fopen(file, "r");
+		FILE* fout = fopen(file, "rb");
 		char ch = fgetc(fout);//从文件file中读取一个字符
 		while (ch != EOF){
 			_info[(unsigned char)ch]._count++;
@@ -51,7 +56,19 @@ public:
 		int pos = 0;
 		string compressFile = file;
 		compressFile += "huffman.txt";//构建压缩文件名
-		FILE* fin = fopen(compressFile.c_str(), "w");
+		FILE* fin = fopen(compressFile.c_str(), "wb");
+		//生成配置文件写入压缩文件
+		ConfigInfo info;
+		for (int i = 0; i < 256; ++i){
+		   if (_info[i]._count != 0){
+				info.ch = _info[i].ch;
+				info._count = _info[i]._count;
+				fwrite(&info, sizeof(ConfigInfo), 1, fin);
+			}
+		}
+		info._count = -1;
+		fwrite(&info, sizeof(ConfigInfo), 1, fin);
+
 		while (ch != EOF)
 		{
 			string& code = _info[(unsigned char)ch].code;
@@ -84,29 +101,55 @@ public:
 	void Uncompression(char* file)
 	{
 		//构建解压后还原文件名
-		FILE* fout = fopen(file, "r");
+		FILE* fout = fopen(file, "rb");
 		string uncompressFile = file;
 		size_t pos = uncompressFile.rfind('h');
 		uncompressFile.erase(pos, uncompressFile.size() - pos);
 		uncompressFile += "unhuffman.txt";
-		FILE* fin = fopen(uncompressFile.c_str(), "w");
+		FILE* fin = fopen(uncompressFile.c_str(), "wb");
 		//重建Huffman树
+		//重建Huffman树依靠压缩文件前面的配置文件
+		ConfigInfo info;
 		CharInfo invalid;
 		invalid._count = 0;
+		while (true){
+			fread(&info, sizeof(ConfigInfo), 1, fout);
+			if (info._count == -1)
+				break;
+			_info[(unsigned char)info.ch].ch = info.ch;
+			_info[(unsigned char)info.ch]._count = info._count;
+		}
 		HuffmanTree<CharInfo> tree(_info, 256, invalid);
-		//解压缩
+		//解压缩原文件
 		Node* cur = tree.GetRoot();
 		char value;
 		long long count = tree.GetRoot()->_w._count;
 		value = fgetc(fout);
-		while (value != EOF)
-		{
-			for (size_t pos = 0; pos <= 7; ++pos)
+		//while (value != EOF)
+		//{
+		//	for (size_t pos = 0; pos <= 7; ++pos)
+		//	{
+		//		if (value & (1 << pos))
+		//			cur = cur->_right;
+		//		else
+		//			cur = cur->_left;
+		//		if (NULL == cur->_left && NULL == cur->_right){
+		//			fputc(cur->_w.ch, fin);
+		//			if (--count == 0){
+		//				break;
+		//			}
+		//			cur = tree.GetRoot();
+		//		}
+		//	}
+		//	value = fgetc(fout);
+		//}
+			for (size_t pos = 0; pos <= 7;)
 			{
 				if (value & (1 << pos))
 					cur = cur->_right;
 				else
 					cur = cur->_left;
+				++pos;
 				if (NULL == cur->_left && NULL == cur->_right){
 					fputc(cur->_w.ch, fin);
 					if (--count == 0){
@@ -114,9 +157,11 @@ public:
 					}
 					cur = tree.GetRoot();
 				}
+				if (pos == 8){
+					value = fgetc(fout);
+					pos = 0;
+				}
 			}
-			value = fgetc(fout);
-		}
 		fclose(fin);
 		fclose(fout);
 	}
@@ -151,11 +196,10 @@ protected:
 		}
 		_GetHuffmanCode(root->_left);
 		_GetHuffmanCode(root->_right);
-		
 	}
 
 	//二岔链获取哈夫曼编码
-	void _GetHuffmanCode(Node* root, string& code)
+	void _GetHuffmanCode(Node* root, string code)
 	{
 		if (NULL == root)
 			return;
@@ -173,7 +217,8 @@ protected:
 int main()
 {
 	FileCompress a;
-	a.Compression("file.txt");
+	//a.Compression("file.txt");
+	//
 	a.Uncompression("file.txthuffman.txt");
 	system("pause");
 	return 0;
