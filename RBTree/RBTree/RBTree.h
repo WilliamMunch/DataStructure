@@ -12,9 +12,9 @@ struct RBTreeNode
 {
 	ValueType _valueField;
 	Color _color;
-	RBTreeNode<ValueType> _pLeft;
-	RBTreeNode<ValueType> _pRight;
-	RBTreeNode<ValueType> _pParent;
+	RBTreeNode<ValueType>* _pLeft;
+	RBTreeNode<ValueType>* _pRight;
+	RBTreeNode<ValueType>* _pParent;
 
 	RBTreeNode(const ValueType& valueField)
 		: _valueField(valueField)
@@ -35,13 +35,13 @@ public:
 		:_node(NULL)
 	{}
 
-	RBTreeIterator(const Node* node)
+	RBTreeIterator(Node* node)
 		:_node(node)
 	{}
 
 	T& operator*()
 	{
-		return _node->_valuefield;
+		return _node->_valueField;
 	}
 
 	T* operator->()
@@ -79,6 +79,7 @@ public:
 			//如果当前结点是其父亲的左孩子 说明中序遍历的下一个结点是其父亲
 			_node = pParent;
 		}
+		return *this;
 	}
 
 	Self& operator --()//从最右结点开始 按 右、 中、 左 顺序找下一个该遍历的结点 逻辑同上
@@ -93,7 +94,7 @@ public:
 		else{
 			Node* cur = _node;
 			Node* pParent = _node->_pParent;
-			while (pParent && pParent->_pLeft = cur){
+			while (pParent && pParent->_pLeft == cur){
 				cur = pParent;
 				pParent = cur->_pParent;
 			}
@@ -105,20 +106,31 @@ private:
 	Node* _node;
 };
 
-template<class K, class T, class KeyofValue>
+template<class T>
+struct KeyOfValue
+{
+	T operator()(const T& key)
+	{
+		return key;
+	}
+};
+
+template<class K, class T, class KeyofValue = KeyOfValue<T>>
 class RBTree
 {
 	typedef RBTreeNode<T> Node;
-	typedef RBTreeIterator<T> Iterator;
+	
 public:
+	typedef RBTreeIterator<T> Iterator;
+
 	RBTree()
-		:_node(NULL)
+		:_root(NULL)
 	{}
 
 	Iterator Begin()
 	{
 		Node* cur = _root;
-		while (cur && cur->pleft){
+		while (cur && cur->_pLeft){
 			cur = cur->_pLeft;
 		}
 		return Iterator(cur);
@@ -163,18 +175,18 @@ public:
 	pair<Iterator, bool> Insert(const T& v)
 	{
 		if (_root == NULL){
-			Node* cur = Node(v);
-			cur->_color = BLACK;
-			return make_pair(Iterator(cur), true);
+			_root = new Node(v);
+			_root->_color = BLACK;
+			return make_pair(Iterator(_root), true);
 		}
 		Node* pParent = NULL;
 		Node* cur = _root;
 		while (cur){
-			if (KeyofValue()(cur->_valueField) < KeyofValue()(v)){
+			if (KeyofValue()(cur->_valueField) > KeyofValue()(v)){
 				pParent = cur;
 				cur = cur->_pLeft;
 			}
-			else if (KeyofValue()(cur->_valueField) > KeyofValue()(v)){
+			else if (KeyofValue()(cur->_valueField) < KeyofValue()(v)){
 				pParent = cur;
 				cur = cur->_pRight;
 			}
@@ -182,9 +194,8 @@ public:
 				return make_pair(Iterator(cur), false);
 			}
 		}
-		Node* pnewNode = Node(v);
-		pnewNode->_color = RED;
-		if (cur == pParent->_pLeft){
+		Node* pnewNode = new Node(v);
+		if (KeyofValue()(pParent->_valueField) > KeyofValue()(v)){
 			pParent->_pLeft = pnewNode;
 			pnewNode->_pParent = pParent;
 		}
@@ -199,8 +210,8 @@ public:
 			Node* pParentParent = pParent->_pParent;
 			if (pParent = pParentParent->_pLeft)
 			{
-				Node* pUncle = pParent->_pRight;
-				if (pUncle->_color == RED){
+				Node* pUncle = pParentParent->_pRight;
+				if (pUncle && pUncle->_color == RED){
 					pUncle->_color = pParent->_color = BLACK;
 					pParentParent->_color = RED;
 					cur = pParentParent;
@@ -218,8 +229,8 @@ public:
 				
 			}
 			else{
-				Node* pUncle = pParent->_pLeft;
-				if (pUncle->_color == RED){
+				Node* pUncle = pParentParent->_pLeft;
+				if (pUncle && pUncle->_color == RED){
 					pUncle->_color = pParent->_color = BLACK;
 					pParentParent->_color = RED;
 					cur = pParentParent;
@@ -234,15 +245,48 @@ public:
 					pParentParent->_color = RED;
 					break;
 				}
-
 			}
 		}
 		_root->_color = BLACK;
 		return make_pair(Iterator(pnewNode), true);
 	}
 
-	
+
+	bool IsBalance()//判断该树是否按照红黑树的规则是平衡的平衡
+	{
+		if (_root && _root->_color == RED)
+			return false;
+		size_t k = 0; 
+		size_t blacknum = 0;
+		Node* cur = _root;
+		while (cur){
+			if (cur->_color == BLACK)
+				++k;
+			cur = cur->_pLeft;
+		}
+		return _IsBalance(_root, blacknum, k);
+	}
+		
 protected:
+	bool _IsBalance(Node* root, size_t blacknum, size_t k)
+	{
+		if (root == NULL){
+			if (blacknum == k)
+				return true;
+			else
+				return false;
+		}
+
+		if (root->_color == BLACK)
+			++blacknum;
+
+		if (root->_color == RED && root->_pParent->_color == RED){
+			return false;
+		}
+
+		return _IsBalance(root->_pLeft, blacknum, k) && _IsBalance(root->_pRight, blacknum, k);
+	}
+
 	void RotateR(Node* pParent)
 	{
 		Node* pSubL = pParent->_pLeft;
@@ -283,12 +327,12 @@ protected:
 		pParent->_pParent = pSubR;
 		pSubR->_pLeft = pParent;
 		if (NULL == pParentParent){
-			_node = pSubR;
-			pSubR->_pParent == NULL;
+			_root = pSubR;
+			pSubR->_pParent = NULL;
 		}
 		else{
 			if (pParentParent->_pLeft == pParent)
-				pParentParent->_pLeft = pSubR；
+				pParentParent->_pLeft = pSubR;
 			else{
 				pParentParent->_pRight = pSubR;
 			}
