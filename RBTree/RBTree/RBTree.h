@@ -115,10 +115,11 @@ struct KeyOfValue
 	}
 };
 
+//Set使用时 T 为 K， Map使用时 T 为 ValueType-------pair<K, V> 一份红黑树代码让Set Map都可以用
 template<class K, class T, class KeyofValue = KeyOfValue<T>>
 class RBTree
 {
-	typedef RBTreeNode<T> Node;
+	typedef RBTreeNode<T> Node; //T 就是RBTreeNode中的 ValueField， Set中的K，Map中的pair<K, V>
 	
 public:
 	typedef RBTreeIterator<T> Iterator;
@@ -195,29 +196,31 @@ public:
 			}
 		}
 		Node* pnewNode = new Node(v);
+		cur = pnewNode;
 		if (KeyofValue()(pParent->_valueField) > KeyofValue()(v)){
-			pParent->_pLeft = pnewNode;
-			pnewNode->_pParent = pParent;
+			pParent->_pLeft = cur;
+			cur->_pParent = pParent;
 		}
 		else
 		{
-			pParent->_pRight = pnewNode;
-			pnewNode->_pParent = pParent;
+			pParent->_pRight = cur;
+			cur->_pParent = pParent;
 		}
 
 		while (pParent && pParent->_color == RED)
 		{
 			Node* pParentParent = pParent->_pParent;
-			if (pParent = pParentParent->_pLeft)
+			if (pParent == pParentParent->_pLeft)
 			{
 				Node* pUncle = pParentParent->_pRight;
 				if (pUncle && pUncle->_color == RED){
 					pUncle->_color = pParent->_color = BLACK;
 					pParentParent->_color = RED;
 					cur = pParentParent;
+					pParent = cur->_pParent;
 				}
 				else{
-					if (pnewNode == pParent->_pRight){
+					if (cur == pParent->_pRight){
 						RotateL(pParent);
 						swap(pParent, cur);
 					}
@@ -234,9 +237,10 @@ public:
 					pUncle->_color = pParent->_color = BLACK;
 					pParentParent->_color = RED;
 					cur = pParentParent;
+					pParent = cur->_pParent;
 				}
-				else{
-					if (pnewNode == pParent->_pLeft){
+				else{//pUncle为空或 pUncle为黑色
+					if (cur == pParent->_pLeft){
 						RotateR(pParent);
 						swap(pParent, cur);
 					}
@@ -257,11 +261,11 @@ public:
 		if (_root && _root->_color == RED)
 			return false;
 		size_t k = 0; 
-		size_t blacknum = 0;
+		size_t blacknum = 0;//blacknum 为每一路径中的黑节点个数
 		Node* cur = _root;
 		while (cur){
 			if (cur->_color == BLACK)
-				++k;
+				++k;//计算其中一条路径的黑节点个数 以它为基准
 			cur = cur->_pLeft;
 		}
 		return _IsBalance(_root, blacknum, k);
@@ -270,7 +274,7 @@ public:
 protected:
 	bool _IsBalance(Node* root, size_t blacknum, size_t k)
 	{
-		if (root == NULL){
+		if (root == NULL){//当 root == NULL 时 递归走完了一条树的路径 这时候算这条路径中黑节点个数是否等于基准
 			if (blacknum == k)
 				return true;
 			else

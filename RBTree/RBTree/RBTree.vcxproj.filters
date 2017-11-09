@@ -18,6 +18,12 @@
     <ClInclude Include="RBTree.h">
       <Filter>源文件</Filter>
     </ClInclude>
+    <ClInclude Include="MyMap.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MySet.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="test.cpp">
