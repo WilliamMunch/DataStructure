@@ -275,6 +275,38 @@ private:
 	size_t _capacity;
 
 };
+
+//实现最小值栈   Min() 要O(1)算法
+template<class T>
+class MinStack
+{
+public:
+	void Push(const T& value){
+		s.push(value);
+		if (min.empty() || min.top() > s.top()){
+			min.push(value);
+		}
+		else{
+			min.push(min.top());
+		}
+	}
+
+	void Pop()
+	{
+		s.pop();
+		min.pop();
+	}
+
+	void Min()
+	{
+		min.top();
+	}
+private:
+	stack<T> s;
+	stack<pair<T, int>> min;
+};
+//也可以最小栈存 pair<>   有个引用计数  
+//也可以用一个栈实现   一次push（） pop（）两个数
 int main()
 {
 	
