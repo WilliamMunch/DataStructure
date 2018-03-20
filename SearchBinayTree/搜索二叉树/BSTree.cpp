@@ -1,6 +1,7 @@
 #pragma once
 //#include"BSTreeiterator.cpp"
 #include<iostream>
+#include<assert.h>
 #include<windows.h>
 
 using namespace std;
@@ -211,6 +212,45 @@ public:
 		return false;
 	}
 
+	Node* Find1(const K& value)
+	{
+		return _Find1(_pRoot, value);
+	}
+
+	Node* _Find1(Node* pRoot, const K& value)
+	{
+		Node* pCur = pRoot;
+		if (NULL == pRoot)
+			return NULL;
+		if (pRoot->_value == value)
+			return pCur;
+		if (NULL == _Find1(pCur->_pLeft, value))
+		{
+			return _Find1(pCur->_pRight, value);
+		}
+	}
+
+	Node* _GetLastCommonAncestor(Node* pRoot, Node* pNode1, Node* pNode2)
+	{
+		if (pRoot == NULL)
+			return NULL;
+		if (pNode1->_value < pRoot->_value && pNode2->_value < pRoot->_value)
+			_GetLastCommonAncestor(pRoot->_pLeft, pNode1, pNode2);
+		else if (pNode1->_value > pRoot->_value && pNode2->_value > pRoot->_value)
+			_GetLastCommonAncestor(pRoot->_pRight, pNode1, pNode2);
+		else {
+			return pRoot;
+		}
+	}
+
+	Node* GetLastCommonAncestor(Node* pNode1, Node* pNode2)
+	{
+		assert(pNode1 && pNode2);
+		if (_pRoot == NULL)
+			return NULL;
+		return _GetLastCommonAncestor(_pRoot, pNode1, pNode2);
+	}
+
  //   bool Remove(const K& key)
 	//{
 	//	Node* pRoot = _pRoot;
@@ -307,6 +347,7 @@ void Test()
 	BSTree<int,int> tree;
 	for (int i = 0; i < 10;i++)
 	   tree.Insert(arr[i], i);
+	cout << tree.GetLastCommonAncestor(tree.Find1(5), tree.Find1(9))->_value << endl;;
 	tree.MidOrder();
 	tree.Remove(5);
 	tree.Remove(4);

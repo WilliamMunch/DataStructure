@@ -36,7 +36,7 @@ public:
 
 	//	}
 	//}
-
+	//变量invalid代表该节点为空                           //数组的索引必须传引用 
 	Node*  _CreateBinaryTree2(const T arr[], size_t size, size_t& index, const T invalid)
 	{
 		Node* pRoot = NULL;
@@ -45,7 +45,7 @@ public:
 			pRoot = new Node(arr[index]);
 			pRoot->_pleft = _CreateBinaryTree2(arr, size, ++index, invalid);
 			pRoot->_pright = _CreateBinaryTree2(arr, size, ++index, invalid);
-
+			//在这里接住下一层的返回值
 		}
 		return pRoot;
 	}
@@ -159,13 +159,13 @@ public:
 			return;
 		q.push(_pRoot);
 		while (!q.empty()){
-			Node* pcur = q.front();
+			Node* cur = q.front();
 			q.pop();
-			if (pcur->_pleft != NULL)
-				q.push(pcur->_pleft);
-			if (pcur->_pright != NULL)
-				q.push(pcur->_pright);
-			cout << pcur->_value << " ";
+			if (cur->_pleft != NULL)
+				q.push(cur->_pleft);
+			if (cur->_pright != NULL)
+				q.push(cur->_pright);
+			cout << cur->_value << " ";
 		}
 		cout << endl;
 	}
@@ -173,35 +173,31 @@ public:
 	bool IsTotalTree()
 	{
 		queue<Node*> q;
-		bool flag = true;
 		if (_pRoot == NULL)
-			return true;
+			return false;
+		bool flag = true;
 		q.push(_pRoot);
 		while (!q.empty()){
-			Node* pcur = q.front();
+			Node* cur = q.front();
 			q.pop();
-			if (pcur->_pleft != NULL){
-				q.push(pcur->_pleft);
-				if (flag == false){
+			if (cur->_pleft != NULL){
+				q.push(cur->_pleft);
+				if (flag == false)
 					return false;
-				}
 			}
 			else{
 				flag = false;
 			}
-			if (pcur->_pright != NULL){
-				q.push(pcur->_pright);
-				if (flag == false){
+			if (cur->_pright != NULL){
+				q.push(cur->_pleft);
+				if (flag == false)
 					return false;
-				}
-
 			}
 			else{
 				flag = false;
 			}
 		}
 		return true;
-
 	}
 
 	//求二叉树的高度  递归法
@@ -221,8 +217,68 @@ public:
 		return (LeftHeight > RightHeight) ? LeftHeight + 1 : RightHeight + 1;
 
 	}
-	//非递归遍历法
-
+	//二叉树按层打印
+	void PrintLevel()
+	{
+		if (_pRoot == NULL)
+			return;
+		queue<Node*> q;
+		q.push(_pRoot);
+		int tobeprint = 1;
+		int nextlevel = 0;
+		while (!q.empty()){
+			Node* pCur = q.front();
+			cout << pCur->_value << " ";
+			tobeprint--;
+			if (pCur->_pleft != NULL){
+				q.push(pCur->_pleft);
+				nextlevel++;
+			}
+			if (pCur->_pright != NULL){
+				q.push(pCur->_pright);
+				nextlevel++;
+			}
+			q.pop();
+			if (tobeprint == 0){
+				cout << endl;
+				tobeprint = nextlevel;
+				nextlevel = 0;
+			}
+		}
+	}
+	//之字形打印二叉树
+	void Zhi_print()
+	{
+		if (_pRoot == NULL)
+			return;
+		stack<Node*> s[2];
+		int cur = 0;
+		int next = 1;
+		s[cur].push(_pRoot);
+		while (!s[0].empty() || !s[1].empty()){
+			Node* pCur = s[cur].top();
+			s[cur].pop();
+			cout << pCur->_value << " ";
+			if (cur == 0){
+				if (pCur->_pleft != NULL)
+					s[next].push(pCur->_pleft);
+				if (pCur->_pright != NULL)
+					s[next].push(pCur->_pright);
+			}
+			else{
+				if (pCur->_pright != NULL)
+					s[next].push(pCur->_pright);
+				if (pCur->_pleft != NULL)
+					s[next].push(pCur->_pleft);
+			}
+			if (s[cur].empty()){
+				cout << endl;
+				cur = 1 - cur;
+				next = 1 - next;
+			}
+		}
+		cout << endl;
+	}
 
 	//把问题分成 树的左路 与 树的其他部分 两块
 	//先将节点压栈 遍历后再出栈 以此模仿递归
@@ -233,7 +289,7 @@ public:
 		if (_pRoot == NULL)
 			return;
 
-		while (cur || !s.empty()){
+		while (cur || !s.empty()){//栈不空说明还有节点未遍历
 			while (cur){
 				cout << cur->_value << " ";
 				s.push(cur);
@@ -253,48 +309,20 @@ public:
 		stack<Node*> s;
 		if (_pRoot == NULL)
 			return;
-		while (cur || !s.empty()){
-			while (cur){
+		while (cur || !s.empty()){//如果 cur为真 !s.empty() 为假 是为了程序第一次进入循环
+									//如果 cur为假 !s.empty()为真程序退回到遍历它的父节点
+			while (cur){//找最左边的节点
 				s.push(cur);
 				cur = cur->_pleft;
 			}
 			Node* top = s.top();
 			cout << top->_value << " ";
-			s.pop();
-
+			s.pop(); 
 			if (top->_pright != NULL)
 				cur = top->_pright;
 		}
 		cout << endl;
 	}
-
-	/*void Mid_Order()
-	{
-	cout << "Mid_Order" << endl;
-	if (NULL == _pRoot)
-	return;
-	stack<Node*> s;
-	Node* pCur = _pRoot;
-	while (pCur || !s.empty()){
-	while (pCur)
-	{
-	s.push(pCur);
-	pCur = pCur->_pleft;
-	}
-	pCur = s.top();
-	cout << pCur->_value << " ";
-	s.pop();
-	while (NULL == pCur->_pright && !s.empty())
-	{
-	pCur = s.top();
-	cout << pCur->_value << " ";
-	s.pop();
-	}
-	pCur = pCur->_pright;
-	}
-	cout << endl;
-	}*/
-
 
 	void Post_Order()
 	{
@@ -394,47 +422,43 @@ public:
 
 	}
 
-	bool _Find2(Node* pRoot, const T& value)
+	bool Find2(Node* pRoot, Node* pNode)
 	{
-		Node* pCur = pRoot;
-		if (NULL == pCur)
-			return false;
-		if (pCur->_value == value)
+		Node* cur = pRoot;
+		if (cur == NULL)
+			return NULL;
+		if (cur == pNode)
 			return true;
-		if (_Find2(pRoot->_pleft, value))
+		if (Find2(cur->_pleft, pNode))
 			return true;
-		return _Find2(pRoot->_pright, value);
+		return Find2(cur->_pright, pNode);
 	}
+
 	Node* _GetLastCommonAncestor(Node* pRoot, Node* pNode1, Node* pNode2)
 	{
 		if (pRoot == NULL)
 			return NULL;
-		if (pNode1 == pRoot || pNode2 == pRoot)
+		if (pNode1 == pRoot && pNode2 == pRoot)
 			return pRoot;
-		bool Node1Inleft = false, Node2Inright = false, \
-			Node1Inright = false, Node2Inleft = false;
-		Node1Inleft = _Find2(pRoot->_pleft, pNode1->_value);
-		if (!Node1Inleft){
-			Node1Inright = _Find2(pRoot->_pright, pNode1->_value);
-		}
-		Node2Inleft = _Find2(pRoot->_pleft, pNode2->_value);
-		if (!Node2Inleft){
-			Node2Inright = _Find2(pRoot->_pright, pNode2->_value);
-		}
-		if (Node1Inright && Node2Inleft || Node1Inleft && Node2Inright){
+		bool Node1InLeft = false, Node2InLeft = false, Node1InRight = false, Node2InRight = false;
+		Node1InLeft = Find2(pRoot->_pleft, pNode1);
+		if (!Node1InLeft)
+			Node1InRight = Find2(pRoot->_pright, pNode1);
+		Node2InLeft = Find2(pRoot->_pleft, pNode2);
+		if (!Node2InLeft)
+			Node2InRight = Find2(pRoot->_pright, pNode2);
+		if ((Node1InLeft && Node2InRight) || (Node2InLeft && Node1InRight))
 			return pRoot;
-		}
-		else if (Node1Inleft && Node2Inleft){
-			return _GetLastCommonAncestor(pRoot->_pleft, pNode1, pNode2);
-		}
-		else if (Node1Inright && Node2Inright){
-			return _GetLastCommonAncestor(pRoot->_pright, pNode1, pNode2);
-		}
+		else if (Node1InLeft && Node2InLeft)
+			_GetLastCommonAncestor(_pRoot->_pleft, pNode1, pNode2);
+		else if (Node2InLeft && Node2InRight)
+			_GetLastCommonAncestor(_pRoot->_pright, pNode1, pNode2);
 		else{
 			assert(false);
 		}
-
+		
 	}
+
 	Node* GetLastCommonAncestor(Node* pNode1, Node* pNode2)
 	{
 		assert(pNode1 && pNode2);
@@ -444,48 +468,63 @@ public:
 	}
 
 	//求二叉树两个结点的最低公共父节点（有辅助内存）
-	bool Find3(Node* pNode, stack<Node*>& path)
+	bool Find3(Node* pNode, stack<Node*>& s)
 	{
-		return _Find3(_pRoot, pNode, path);
+		if (_pRoot == NULL)
+			return false;
+		return _Find3(_pRoot, pNode, s);
 	}
-	bool _Find3(Node* pRoot, Node* pNode, stack<Node*>& path)
-	{
-		if (pRoot == NULL) return false;
-		path.push(pRoot);
 
-		if (pRoot == pNode) return true;
-		if (true == _Find3(pRoot->_pleft, pNode, path))
+	bool _Find3(Node* pRoot, Node* pNode, stack<Node*>& s)
+	{
+		if (pRoot == NULL)
+			return false;
+		s.push(pRoot);
+		if (pRoot == pNode)
 			return true;
-		if (true == _Find3(pRoot->_pright, pNode, path))
+		if (true == _Find3(pRoot->_pleft, pNode, s))
 			return true;
-		path.pop();//走到这里说明在一条从根到叶子的路径中没有找到要找的节点 出栈去上一层找
+		if (true == _Find3(pRoot->_pright, pNode, s))
+			return true;
+		s.pop();//走到这里说明在一条从根到叶子的路径中没有找到要找的节点 出栈去上一层找
 		return false;
 	}
 
 	Node* GetLastCommonAncestor2(Node* pNode1, Node* pNode2)
 	{
 		assert(pNode1 && pNode2);
-		stack<Node*> path1;
-		stack<Node*> path2;
-		Find3(pNode1, path1);
-		Find3(pNode2, path2);
-		while (path1.size() != path2.size()){
-			if (path1.size() > path2.size()){
-				path1.pop();
+		if (_pRoot == NULL)
+			return NULL;
+		stack<Node*> s1;
+		stack<Node*> s2;
+		Find3(pNode1, s1);
+		Find3(pNode2, s2);
+		while (s1.size() != s2.size()){
+			if (s1.size() < s2.size()){
+				s2.pop();
 			}
-			else
-				path2.pop();
+			else{
+				s1.pop();
+			}
 		}
-		while (!path1.empty() && !path2.empty() && path1.top() != path2.top())
-		{
-			path1.pop();
-			path2.pop();
+		while (!s1.empty() && !s2.empty() && s1.top() != s2.top()){
+			s1.pop();
+			s2.pop();
 		}
-		if (path1.top() == path2.top()) return path1.top();
-		return NULL;
+		if (s1.top() == s2.top())
+			return s1.top();
+		else if (!s1.empty()){
+			return pNode1;
+		}
+		else{
+			return pNode2;
+		}
 	}
 	//求二叉树的两个节点之间的最远距离
 	//O(n) 方
+	
+
+
 	size_t GetMaxLength()
 	{
 		size_t maxlength = 0;
@@ -578,6 +617,40 @@ TreeNode* ReBulidBinaryTree(const vector<char>& preOrder, const vector<char>& in
 	return _ReBulidBinaryTree(preindex, inBegin, inEnd, preOrder, inOrder);
 }
 
+TreeNode* _ReBuildBinaryTree2(int& postindex, int inBegin, int inEnd, \
+	const vector<char>& postOrder, const vector<char>& inOrder)
+{
+	if (inBegin > inEnd)
+		return NULL;
+	TreeNode* root = new TreeNode(postOrder[postindex]);
+	int rootindex = inBegin;
+	while (rootindex <= inEnd){
+		if (root->_value == inOrder[rootindex])
+			break;
+		rootindex++;
+	}
+	assert(rootindex <= inEnd);
+	if (rootindex + 1 <= inEnd)
+		 root->_pright = _ReBuildBinaryTree2(--postindex, rootindex + 1, inEnd, postOrder, inOrder);
+	else
+    	 root->_pright = NULL;
+	if (inBegin <= rootindex - 1)
+		root->_pleft = _ReBuildBinaryTree2(--postindex, inBegin , rootindex - 1, postOrder, inOrder);
+	else
+		root->_pleft = NULL;
+	return root;
+}
+
+TreeNode* ReBulidBinaryTree2(const vector<char>& postOrder, const vector<char>& inOrder)
+{
+	if (postOrder.size() != inOrder.size())
+		return NULL;
+	int postindex = postOrder.size() - 1;
+	int inBegin = 0;
+	int inEnd = inOrder.size() - 1;
+	return _ReBuildBinaryTree2(postindex, inBegin, inEnd, postOrder, inOrder);
+}
+
 //把二叉搜索树转化成双向链表
 void _TreeToList(TreeNode* cur, TreeNode*& prev)
 {
@@ -608,20 +681,28 @@ void Test()
 {
 	vector<char> prev;
 	vector<char> in;
-
-	prev.push_back('1');
+	vector<char> post;
+ 	prev.push_back('1');
 	prev.push_back('2');
 	prev.push_back('3');
 	prev.push_back('4');
 	prev.push_back('5');
 	prev.push_back('6');
-	in.push_back('2');
 	in.push_back('3');
+	in.push_back('2');
 	in.push_back('4');
 	in.push_back('1');
 	in.push_back('6');
 	in.push_back('5');
-	TreeNode* root = ReBulidBinaryTree(prev, in);
+	post.push_back('3');
+	post.push_back('4');
+	post.push_back('2');
+	post.push_back('6');
+	post.push_back('5');
+	post.push_back('1');
+
+	TreeNode* root1 = ReBulidBinaryTree(prev, in);
+	TreeNode* root2 = ReBulidBinaryTree2(post, in);
 }
 
 int main()
@@ -629,15 +710,17 @@ int main()
 	char arr[] = { '1', '2', '3', '#', '#', '4', '#', '#', '5', '6' };
 
 	BinaryTree<char> BiTree(arr, sizeof(arr) / sizeof(arr[0]), '#');
-
-	//BiTree.Post_Order();
+	BiTree.Zhi_print();
+	BiTree.PrintLevel();
+	BiTree.Post_Order();
 	BiTree.Pre_Order();
-	cout << BiTree.GetLastCommonAncestor(BiTree.Find1('5'), BiTree.Find1('3'))->_value << endl;;
-	cout << BiTree.GetLastCommonAncestor2(BiTree.Find1('4'), BiTree.Find1('3'))->_value << endl;;
-	cout << BiTree.GetMaxLength() << endl;
+	cout << BiTree.GetLastCommonAncestor(BiTree.Find1('4'), BiTree.Find1('3'))->_value << endl;;
+	cout << BiTree.GetLastCommonAncestor2(BiTree.Find1('2'), BiTree.Find1('3'))->_value << endl;;
+	//cout << BiTree.GetMaxLength() << endl;
 	Test();
-	//BiTree.Mid_Order();
-	//BiTree.level_Order();
+	BiTree.Mid_Order();
+	BiTree.level_Order();
+	cout << BiTree.IsTotalTree()<<endl;
 	//if (BiTree.IsTotalTree())
 	//	cout << "shi" << " ";
 	//else
@@ -645,8 +728,8 @@ int main()
 	//BiTree.Mirror();
 	//BiTree.PreOrder();
 	//cout << BiTree.Size() << endl;
-	//cout << BiTree.TreeHeight() << endl;
-	//cout << BiTree.k_nodes(3) << endl;
+	cout << BiTree.TreeHeight() << endl;
+	cout << BiTree.k_nodes(3) << endl;
 	//int Prearr[] = { 1, 2, 3 };//前序遍历结果
 	//int Inarr[] = { 2,1,3 };//中序遍历结果
 	//BinaryTree<int> tree;
