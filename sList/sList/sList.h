@@ -2,6 +2,9 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<malloc.h>
+#include<iostream>
+
+using namespace std;
 
 //#pragma warning (disable:4996);
 
@@ -10,7 +13,12 @@ typedef int DataType;
 typedef struct Node{
 	struct Node* next;
 	DataType data;
-}Node, *PNode, LinkList;
+
+	Node(DataType value)
+		:data(value)
+		,next(nullptr)
+	{}
+}Node, *PNode, ListNode;
 
 //初始化单链表
 void InitList(PNode* pHead);

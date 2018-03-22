@@ -334,30 +334,29 @@ int IfCrossWithCricle(PNode pHead1, PNode pHead2)//ÅÐ¶ÏÁ½¸ö¿ÉÄÜ´ø»·µÄÁ´±íÊÇ·ñÏà½
 	return 0;
 }
 
-PNode Reverse(PNode pHead)
+PNode Reverse(PNode phead)
 {
-	PNode pPre = pHead;
-	PNode pCur = pHead->next;
-	PNode pnext = pCur->next;
-	if (NULL == pHead || NULL == pHead->next)
-		return 0;
-	while (pnext){
+	if (nullptr == phead && nullptr == phead->next)
+		return phead;
+	PNode pPre = phead;
+	PNode pCur = pPre->next;
+	PNode pNext = pCur->next;
+	while (pNext){
 		pCur->next = pPre;
 		pPre = pCur;
-		pCur = pnext;
-		pnext = pnext->next;
+		pCur = pNext;
+		pNext = pNext->next;
 	}
 	pCur->next = pPre;
-	pHead->next = NULL;
+	phead->next = nullptr;
 	return pCur;
 }
 
 PNode Josephcircle(PNode pHead, int n)
 {
-	PNode pCur = pHead;
-
 	if (NULL == pHead)
 		return NULL;
+	PNode pCur = pHead;
 	while (pCur->next != pCur){
 		PNode pDel = pCur->next;
 		int count = n;
@@ -376,7 +375,7 @@ PNode GetListMid(PNode pNode)
 {
 	if (pNode == NULL)
 		return NULL;
-	PNode pFast = pNode;
+	PNode pFast = pNode->next;
 	PNode pSlow = pNode;
 	while (pFast != NULL){
 		pFast = pFast->next;
@@ -394,7 +393,6 @@ PNode MergeList(PNode p1, PNode p2)
 		return p2;
 	if (p2 == NULL)
 		return p1;
-
 	PNode plist1 = p1;
 	PNode plist2 = p2;
 	PNode pTemp = NULL;
@@ -424,6 +422,40 @@ PNode MergeList(PNode p1, PNode p2)
 	return pHead;
 }
 
+PNode SortPart(PNode pBegin, PNode pEnd)
+{
+	PNode pCur = pBegin->next;
+	PNode pPrv = pBegin;
+	int key = pPrv->data;
+	while (pCur != pEnd){
+		if (pCur->data < key){
+			pPrv = pPrv->next;
+			if (pPrv != pCur)
+				swap(pCur->data, pPrv->data);
+		}
+		pCur = pCur->next;
+	}
+	//pPrv = pPrv->next;//ÕâÒ»¾äÊÇÃ»ÓÐµÄ
+	swap(pPrv->data, pBegin->data);
+	return pPrv;
+}
+
+void _QuickSort(PNode pBegin, PNode pEnd)
+{
+	if (pBegin == pEnd)
+		return;
+	PNode pMid = SortPart(pBegin, pEnd);
+	_QuickSort(pBegin, pMid);
+	_QuickSort(pMid->next, pEnd);
+}
+
+void QuickSort(PNode pHead)
+{
+	if (pHead == NULL || pHead->next == NULL)
+		return;
+	_QuickSort(pHead, NULL);
+}
+
 PNode MergeSort(PNode pNode)
 {
 	if (pNode == NULL || pNode->next == NULL)
@@ -437,11 +469,51 @@ PNode MergeSort(PNode pNode)
 	return MergeList(pBegin1, pBegin2);
 }
 
+PNode K_Group_Reverse(PNode phead, int k)
+{
+	if (nullptr == phead && nullptr == phead->next && k <= 1)
+		return phead;
+	int num = 0;
+	PNode preheader = new Node(-1);
+	preheader->next = phead;
+	PNode pre = preheader, cur = preheader,/* tmp*/ nex;
+	while (cur = cur->next)
+		++num;
+	while (num >= k){
+		cur = pre->next;
+		nex = cur->next;
+		for (size_t i = 1; i < k; ++i){
+			/*tmp = nex->next;
+			cur->next = tmp;
+			nex->next = pre->next;
+			pre->next = nex;
+			nex = tmp;*/
+			cur->next = nex->next;
+			nex->next = pre->next;
+			pre->next = nex;
+			nex = cur->next;
+		}
+		pre = cur;
+		num -= k;
+	}
+	return preheader->next;
+}
+
+int ADD(int num1, int num2)
+{
+	int tmp = 0;
+	while (tmp = (num1 & num2)){
+		num1 = (num1 ^ num2);
+		num2 = tmp << 1;
+	}
+	return num1 ^ num2;
+}
 
 
 int main()
 {
-	PNode pHead = BueNode(0);
+	cout << ADD(2, 3) << endl;
+	PNode pHead = BueNode(1);
 	//PNode pHead = NULL;
 	//InitList(phead);
 	PNode* phead = &pHead;
@@ -450,13 +522,17 @@ int main()
 	PushBack(phead, 2);
 	PushBack(phead, 6);
 	PushBack(phead, 5);
-	PushBack(phead, 1);
+	//PushBack(phead, 1);
 	PushBack(phead, 9);
 	PushBack(phead, 4);
 	PushBack(phead, 8);
 	PrintList(pHead);
-	pHead = MergeSort(pHead);
+	QuickSort(pHead);
 	PrintList(pHead);
+	PNode pret = K_Group_Reverse(pHead, 3);
+	//pHead = MergeSort(pHead);
+	PrintList(pret);
+	//PrintList(pHead);
 	getchar();
 	return 0;
 }
