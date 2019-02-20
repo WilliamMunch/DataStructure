@@ -1,10 +1,10 @@
 #pragma once
+
 #include<string.h>
 #include<iostream>
 #include<queue>
 #include<stack>
 #include<assert.h>
-
 
 using namespace std;
 
@@ -169,6 +169,7 @@ public:
 		}
 		cout << endl;
 	}
+	
 	//判断一棵二叉树是否是完全二叉树
 	bool IsTotalTree()
 	{
@@ -199,15 +200,15 @@ public:
 		}
 		return true;
 	}
-
+	
 	//求二叉树的高度  递归法
 	size_t TreeHeight()
 	{
-		return _TreeHeight(_pRoot);
+		return _TreeHeight2(_pRoot);
 	}
 	size_t _TreeHeight(Node*& pRoot)
 	{
-		if (NULL == pRoot)
+		if (nullptr == pRoot)
 			return 0;
 		/*if (NULL == pRoot->_pleft && NULL == pRoot->_pright)
 		return 1;*/
@@ -215,7 +216,70 @@ public:
 		size_t RightHeight = _TreeHeight(pRoot->_pright);
 
 		return (LeftHeight > RightHeight) ? LeftHeight + 1 : RightHeight + 1;
+	}
+	//二叉树高度，非递归
 
+	size_t _TreeHeight2(Node*& pRoot)
+	{
+		if (nullptr == pRoot)
+			return 0;
+		queue<Node*> q;
+		q.push(pRoot);
+		size_t height = 0;
+		while (!q.empty()){
+			++height;
+			int curlevelcount = q.size();
+			int cnt = 0;
+			while (cnt < curlevelcount){
+				Node* pCur = q.front();
+				++cnt;
+				q.pop();
+				if (pCur->_pleft != nullptr){
+					q.push(pCur->_pleft);
+				}
+				if (pCur->_pright != nullptr){
+					q.push(pCur->_pright);
+				}
+			}
+		}
+		return height;
+	}
+	//二叉树左视图
+	
+	void TreeLeftView()
+	{
+		_TreeLeftView(_pRoot);
+	}
+	
+	void _TreeLeftView(Node*& pRoot)
+	{
+		if (pRoot == nullptr)
+			return;
+		queue<Node*> q;
+		q.push(pRoot);
+		while(!q.empty())
+		{
+			int curlevelcount = q.size();
+			int cnt = 0;
+			while (cnt < curlevelcount)
+			{
+				Node* pCur = q.front();
+				q.pop();
+				++cnt;
+				if (1 == cnt)
+				{
+					cout << pCur->_value << " ";
+				}
+				if (pCur->_pleft != nullptr)
+				{
+					q.push(pCur->_pleft);
+				}
+				if (pCur->_pright != nullptr)
+				{
+					q.push(pCur->_pright);
+				}
+			}
+		}
 	}
 	//二叉树按层打印
 	void PrintLevel()
@@ -279,7 +343,8 @@ public:
 		}
 		cout << endl;
 	}
-
+	
+	//非递归遍历二叉树
 	//把问题分成 树的左路 与 树的其他部分 两块
 	//先将节点压栈 遍历后再出栈 以此模仿递归
 	void Pre_Order()
@@ -302,6 +367,7 @@ public:
 		}
 		cout << endl;
 	}
+
 	//相较于先序遍历 只需要改变访问节点的时机
 	void Mid_Order()
 	{
@@ -326,26 +392,27 @@ public:
 
 	void Post_Order()
 	{
-		Node* cur = _pRoot;
-		Node* prev = NULL;//用prev记录下来已经遍历过的节点
+		if (NULL == _pRoot)
+			return;
+		Node* pCur = _pRoot;
+		Node* pRev = NULL;
 		stack<Node*> s;
-		while (cur || !s.empty()){
-			while (cur){
-				s.push(cur);
-				cur = cur->_pleft;
+		s.push(pCur);
+		while (pCur || !s.empty()){
+			while (pCur != NULL){
+				s.push(pCur);
+				pCur = pCur->_pleft;
 			}
-			Node* top = s.top();
-			if (top->_pright == NULL || top->_pright == prev){
-				//为防止死循环 已遍历的右子树不会再被遍历
-				cout << top->_value << " ";
+			Node* pTop = s.top();
+			if (pTop->_pright == NULL || pTop->_pright == pRev){
+				cout << pTop->_value << " ";
 				s.pop();
-				prev = top;
+				pRev = pTop;
 			}
-			else{//遍历未被遍历的右子树
-				cur = top->_pright;
+			else{
+				pCur = pTop->_pright;
 			}
 		}
-		cout << endl;
 	}
 
 	//求二叉树的镜像
@@ -419,7 +486,7 @@ public:
 		{
 			return _Find1(pCur->_pright, value);
 		}
-
+		return NULL;
 	}
 
 	bool Find2(Node* pRoot, Node* pNode)
@@ -456,7 +523,7 @@ public:
 		else{
 			assert(false);
 		}
-		
+		return NULL;
 	}
 
 	Node* GetLastCommonAncestor(Node* pNode1, Node* pNode2)
@@ -492,9 +559,10 @@ public:
 
 	Node* GetLastCommonAncestor2(Node* pNode1, Node* pNode2)
 	{
-		assert(pNode1 && pNode2);
+		//assert(pNode1 && pNode2);
 		if (_pRoot == NULL)
 			return NULL;
+		Node* pRoot = _pRoot;
 		stack<Node*> s1;
 		stack<Node*> s2;
 		Find3(pNode1, s1);
@@ -522,8 +590,6 @@ public:
 	}
 	//求二叉树的两个节点之间的最远距离
 	//O(n) 方
-	
-
 
 	size_t GetMaxLength()
 	{
@@ -549,7 +615,7 @@ public:
 	{
 		if (pRoot == NULL)
 			return 0;
-		size_t leftLength = _GetMaxLength2(pRoot->_pleft, maxlength);
+		size_t leftLength  = _GetMaxLength2(pRoot->_pleft, maxlength);
 		size_t rightLength = _GetMaxLength2(pRoot->_pright, maxlength);
 
 		if (leftLength + rightLength > maxlength)
@@ -557,8 +623,83 @@ public:
 		return leftLength > rightLength ? leftLength + 1 : rightLength + 1;
 	}
 	//判断一棵树是不是另外一棵树的子树
+	
 
+	//求二叉树两个结点的最远距离
+	unsigned int MaxNodeLen()
+	{
+		unsigned int MaxLen = 0;
+		
+		_MaxNodeLen(_pRoot, MaxLen);
+	}
 
+	unsigned int _MaxNodeLen(Node* pRoot, unsigned int& Maxlen)
+	{
+		if (nullptr == pRoot)
+			return 0;
+		//if(pRoot->_pleft)
+		unsigned int leftMaxLen = _MaxNodeLen(pRoot->_pleft, Maxlen);
+		//if(pRoot->_pright)
+		unsigned int rightMaxLen = _MaxNodeLen(pRoot->_pright, Maxlen);
+
+		if (leftMaxLen + rightMaxLen > Maxlen)
+			Maxlen = leftMaxLen + rightMaxLen;
+
+		return leftMaxLen > rightMaxLen ? leftMaxLen + 1 : rightMaxLen + 1;
+	}
+
+	//二叉树的最大（小）层数
+	int maxdefpth()
+	{
+		if (_pRoot == NULL)
+			return 0;
+		return _maxdepth(_pRoot);
+	}
+
+	int _maxdepth(Node* pRoot)
+	{
+		if (pRoot == NULL)
+			return 0;
+		if (pRoot->_pleft == NULL && pRoot->_pright == NULL)
+			return 1;
+		int leftdepth = _maxdepth(pRoot->_pleft);
+		int rightdepth = _maxdepth(pRoot->_pright);
+		
+		return leftdepth > rightdepth ? leftdepth + 1 : rightdepth + 1;
+	}
+
+	//判断另一棵二叉树是不是这棵树的子树
+	bool check_is_subtree(Node* pTestRoot)
+	{
+		if (pTestRoot == NULL)
+			return true;
+		return _check_is_subtree(_pRoot, pTestRoot);
+	}
+	
+	bool _sub_check(Node* pRoot, Node* pTestRoot)
+	{
+		if (pRoot->_value != pTestRoot->_value)
+			return false;
+		if (pRoot == NULL && pTestRoot == NULL)
+			return true;
+		if (pRoot == NULL || pTestRoot == NULL)
+			return false;
+		return _sub_check(pRoot->_pleft, pTestRoot->_pleft) || \
+			_sub_check(pRoot->_pright, pRoot->_pright);
+	}
+
+	bool _check_is_subtree(Node* pRoot, Node* pTestRoot)
+	{
+		if (pRoot == NULL)
+			return false;
+		if (pRoot->_value == pTestRoot->_pright)
+			return _sub_check(pRoot, pTestRoot);
+
+		return _check_is_subtree(pRoot->_pleft, pTestRoot) || \
+			_check_is_subtree(pRoot->_pright, pTestRoot);
+	}
+
+	
 
 private:
 	Node* _pRoot;
@@ -677,6 +818,61 @@ TreeNode* TreeToList(TreeNode* root)
 	return head;
 }
 
+//根据有序序列构建二叉树
+TreeNode* build_bst(vector<int> _v )
+{
+	if (_v.size() == 0)
+		return NULL;
+	if (_v.size() == 1)
+		return new TreeNode(_v[0]);
+	int mid = _v.size() / 2;
+	vector<int>::const_iterator frist = _v.begin();
+	vector<int>::const_iterator last = _v.begin() + mid;
+
+	vector<int> _v2(frist, last);
+	TreeNode* node = new TreeNode(_v[mid]);
+	
+	node->_pleft = build_bst(_v2);
+
+	if (mid == _v.size() - 1)
+		node->_pright = NULL;
+	else
+	{
+		frist = _v.begin() + mid + 1;
+		last = _v.end();
+		vector<int> _v2(frist, last);
+		node->_pright = build_bst(_v2);
+	}
+	return node;
+}
+
+//二叉树的数值最大路径
+int maxPathSum(TreeNode* root, int& maxSum)
+{
+	if (root == NULL)
+		return 0;
+	int leftsum = maxPathSum(root->_pleft, maxSum);
+	int rightsum = maxPathSum(root->_pright, maxSum);
+
+	int value = root->_value;
+	int retsum = leftsum > rightsum ? max(leftsum + value, value) : \
+		max(rightsum + value, value);
+	maxSum = max(maxSum, max(value + leftsum + rightsum, retsum));
+	return retsum;
+}
+
+bool has_path_sum(TreeNode* pRoot, int sum)
+{
+	if (pRoot == NULL)
+		return false;
+	if (pRoot->_pleft == NULL && pRoot->_pright == NULL && sum == pRoot->_value)
+	{
+		return true;
+	}
+	return has_path_sum(pRoot->_pleft, sum - pRoot->_value) || \
+		has_path_sum(pRoot->_pright, sum - pRoot->_value);
+}
+
 void Test()
 {
 	vector<char> prev;
@@ -703,6 +899,7 @@ void Test()
 
 	TreeNode* root1 = ReBulidBinaryTree(prev, in);
 	TreeNode* root2 = ReBulidBinaryTree2(post, in);
+	cout << "ha"<< has_path_sum(root2, 6) << endl;
 }
 
 int main()
@@ -714,8 +911,8 @@ int main()
 	BiTree.PrintLevel();
 	BiTree.Post_Order();
 	BiTree.Pre_Order();
-	cout << BiTree.GetLastCommonAncestor(BiTree.Find1('4'), BiTree.Find1('3'))->_value << endl;;
-	cout << BiTree.GetLastCommonAncestor2(BiTree.Find1('2'), BiTree.Find1('3'))->_value << endl;;
+	//cout << BiTree.GetLastCommonAncestor(BiTree.Find1('4'), BiTree.Find1('3'))->_value << endl;;
+	//cout << BiTree.GetLastCommonAncestor2(BiTree.Find1('2'), BiTree.Find1('3'))->_value << endl;;
 	//cout << BiTree.GetMaxLength() << endl;
 	Test();
 	BiTree.Mid_Order();
@@ -730,13 +927,13 @@ int main()
 	//cout << BiTree.Size() << endl;
 	cout << BiTree.TreeHeight() << endl;
 	cout << BiTree.k_nodes(3) << endl;
+	cout << BiTree.maxdefpth() << endl;
 	//int Prearr[] = { 1, 2, 3 };//前序遍历结果
 	//int Inarr[] = { 2,1,3 };//中序遍历结果
 	//BinaryTree<int> tree;
 	//tree.ReConstruct(Prearr, Inarr,sizeof(Prearr));
 	//tree.Pre_Order();
 	//tree.Mid_Order();
-
 	system("pause");
 	return 0;
 }

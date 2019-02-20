@@ -19,7 +19,6 @@ PNode BueNode(DataType data)
 
 void PushBack(PNode* pHead, DataType data)
 {
-
 	if (NULL == *pHead)
 		*pHead = BueNode(data);
 	else{
@@ -146,8 +145,8 @@ void Erase(PNode* pHead, PNode pos)
 		pPre->next = pos->next;
 		free(pos);
 	}
-
 }
+
 void DeleteNotTailNode(PNode pos)
 {
 	assert(pos);
@@ -386,74 +385,129 @@ PNode GetListMid(PNode pNode)
 	}
 	return pSlow;
 }
+//
+//PNode MergeList(PNode p1, PNode p2)
+//{
+//	if (p1 == NULL)
+//		return p2;
+//	if (p2 == NULL)
+//		return p1;
+//	PNode plist1 = p1;
+//	PNode plist2 = p2;
+//	PNode pTemp = NULL;
+//	if (plist1->data <= plist2->data){
+//		pTemp = plist1;
+//		plist1 = plist1->next;
+//	}
+//	else{
+//		pTemp = plist2;
+//		plist2 = plist2->next;
+//	}
+//	PNode pHead = pTemp;
+//	while (plist1 && plist2){
+//		if (plist1->data <= plist2->data){
+//			pTemp->next = plist1;
+//			pTemp = plist1;
+//			plist1 = plist1->next;
+//		}
+//		else
+//		{
+//			pTemp->next = plist2;
+//			pTemp = plist2;
+//			plist2 = plist2->next;
+//		}
+//	}
+//	pTemp->next = plist1 ? plist1 : plist2;
+//	return pHead;
+//}
 
-PNode MergeList(PNode p1, PNode p2)
+
+PNode merge_list(PNode plist1, PNode plist2)
 {
-	if (p1 == NULL)
-		return p2;
-	if (p2 == NULL)
-		return p1;
-	PNode plist1 = p1;
-	PNode plist2 = p2;
-	PNode pTemp = NULL;
-	if (plist1->data <= plist2->data){
-		pTemp = plist1;
+	if (nullptr == plist1)
+		return plist2;
+	if (nullptr == plist2)
+		return plist1;
+	PNode ptemp = nullptr;
+	if (plist1->data < plist2->data)
+	{
+		ptemp = plist1;
 		plist1 = plist1->next;
 	}
-	else{
-		pTemp = plist2;
+	else
+	{
+		ptemp  = plist2;
 		plist2 = plist2->next;
 	}
-	PNode pHead = pTemp;
-	while (plist1 && plist2){
-		if (plist1->data <= plist2->data){
-			pTemp->next = plist1;
-			pTemp = plist1;
+	PNode phead = ptemp;
+	while (plist1 && plist2)
+	{
+		if (plist1->data <= plist2->data)
+		{
+			ptemp->next = plist1;
 			plist1 = plist1->next;
+			ptemp = ptemp->next;
 		}
 		else
 		{
-			pTemp->next = plist2;
-			pTemp = plist2;
+			ptemp->next = plist2;
 			plist2 = plist2->next;
+			ptemp = ptemp->next;
 		}
 	}
-	pTemp->next = plist1 ? plist1 : plist2;
-	return pHead;
+	ptemp->next = plist1 ? plist1 : plist2;
+	return phead;
 }
 
-PNode SortPart(PNode pBegin, PNode pEnd)
+PNode merge_lists(PNode lists[], int n)
 {
-	PNode pCur = pBegin->next;
-	PNode pPrv = pBegin;
-	int key = pPrv->data;
-	while (pCur != pEnd){
-		if (pCur->data < key){
-			pPrv = pPrv->next;
-			if (pPrv != pCur)
-				swap(pCur->data, pPrv->data);
-		}
-		pCur = pCur->next;
+	if (NULL == lists)
+		return NULL;
+	while (n > 1)
+	{
+		int k = (n + 1) >> 1;
+		for (int i = 0; i < k; ++i)
+			lists[i] = merge_list(lists[i], lists[i + k]);
+		n = k;
 	}
-	//pPrv = pPrv->next;//这一句是没有的
-	swap(pPrv->data, pBegin->data);
-	return pPrv;
+	return lists[0];
 }
 
-void _QuickSort(PNode pBegin, PNode pEnd)
+PNode sort_part(PNode pbegin, PNode pend)
 {
-	if (pBegin == pEnd)
-		return;
-	PNode pMid = SortPart(pBegin, pEnd);
-	_QuickSort(pBegin, pMid);
-	_QuickSort(pMid->next, pEnd);
+	if (pbegin->next == pend || pbegin == pend)
+		return pbegin;
+	PNode pkey = pbegin;
+	PNode pcur = pbegin;
+	PNode pprev = pbegin;
+	while (pcur != pend)
+	{
+		if (pcur->data < pkey->data)
+		{
+			pprev = pprev->next;
+			if (pcur != pprev)
+				swap(pcur->data, pprev->data);
+		}
+		pcur = pcur->next;
+	}
+	swap(pprev->data, pkey->data);
+	return pprev;
 }
 
-void QuickSort(PNode pHead)
+void _quick_sort(PNode pbegin, PNode pend)
 {
-	if (pHead == NULL || pHead->next == NULL)
+	if (pbegin == pend || pbegin->next == pend)
 		return;
-	_QuickSort(pHead, NULL);
+	PNode pmid = sort_part(pbegin, pend);
+	_quick_sort(pbegin, pmid);
+	_quick_sort(pmid->next, pend);
+}
+
+void quick_sort(PNode pHead)
+{
+	if (nullptr == pHead || pHead->next == nullptr)
+		return;
+	_quick_sort(pHead, nullptr);
 }
 
 PNode MergeSort(PNode pNode)
@@ -465,13 +519,14 @@ PNode MergeSort(PNode pNode)
 	PNode pBegin2 = pMid->next;
 	pMid->next = NULL;
 	pBegin1 = MergeSort(pBegin1);
-	pBegin2 = MergeSort(pBegin2);
+	////pBegin2 = MergeSort(pBegin2);
 	return MergeList(pBegin1, pBegin2);
 }
 
+//单链表每K个拟制
 PNode K_Group_Reverse(PNode phead, int k)
 {
-	if (nullptr == phead && nullptr == phead->next && k <= 1)
+	if (nullptr == phead || nullptr == phead->next && k <= 1)
 		return phead;
 	int num = 0;
 	PNode preheader = new Node(-1);
@@ -482,12 +537,7 @@ PNode K_Group_Reverse(PNode phead, int k)
 	while (num >= k){
 		cur = pre->next;
 		nex = cur->next;
-		for (size_t i = 1; i < k; ++i){
-			/*tmp = nex->next;
-			cur->next = tmp;
-			nex->next = pre->next;
-			pre->next = nex;
-			nex = tmp;*/
+		for (int i = 1; i < k; ++i){
 			cur->next = nex->next;
 			nex->next = pre->next;
 			pre->next = nex;
@@ -496,8 +546,71 @@ PNode K_Group_Reverse(PNode phead, int k)
 		pre = cur;
 		num -= k;
 	}
+    delete preheader;
 	return preheader->next;
 }
+
+PNode Rotate_K(PNode phead, int k)
+{
+	if (nullptr == phead || nullptr == phead->next)
+		return phead;
+	int len = 1;
+	PNode newH = phead;
+	PNode tail = phead;
+	while (tail->next){
+		tail = tail->next;
+		len++;
+	}
+	tail->next = phead;
+	if (k % len){
+		for (auto i = 0; i < len - k; ++i)
+			tail = tail->next;
+	}
+	newH = tail->next;
+	tail->next = NULL;
+	return newH;
+}
+
+//根据有序链表构建搜索树
+
+struct TreeNode
+{
+	int _value;
+	struct TreeNode* _pleft;
+	struct TreeNode* _pright;
+	TreeNode(int value)
+		:_value(value)
+		, _pleft(NULL)
+		, _pright(NULL)
+	{}
+};
+
+typedef struct TreeNode TreeNode;
+
+TreeNode* _sortlist_to_bstree(Node*& phead, int left, int right)
+{
+	if (left > right)
+		return NULL;
+	int mid = left + ((right - left) >> 1);
+	TreeNode* pleft = _sortlist_to_bstree(phead, left, mid);
+	TreeNode* node = new TreeNode(phead->data);
+	node->_pleft = pleft;
+	phead = phead->next;
+	TreeNode* pright = _sortlist_to_bstree(phead, mid + 1, right);
+	node->_pright = pright;
+	return node;
+}
+
+TreeNode* sortlist_to_bstree(Node* phead)
+{
+	if (phead == NULL)
+		return NULL;
+	int len = 0;
+	for (Node* p = phead; p != NULL; p = p->next)
+		++len;
+	return _sortlist_to_bstree(phead, len - 1, 0);
+}
+
 
 int ADD(int num1, int num2)
 {
@@ -509,15 +622,14 @@ int ADD(int num1, int num2)
 	return num1 ^ num2;
 }
 
-
 int main()
 {
 	cout << ADD(2, 3) << endl;
-	PNode pHead = BueNode(1);
+	PNode pHead = BueNode(7);
 	//PNode pHead = NULL;
 	//InitList(phead);
 	PNode* phead = &pHead;
-	PushBack(phead, 3);
+	PushBack(phead, 6);
 	PushBack(phead, 7);
 	PushBack(phead, 2);
 	PushBack(phead, 6);
@@ -527,11 +639,13 @@ int main()
 	PushBack(phead, 4);
 	PushBack(phead, 8);
 	PrintList(pHead);
-	QuickSort(pHead);
+	//QuickSort(pHead);
+	quick_sort(pHead);
 	PrintList(pHead);
-	PNode pret = K_Group_Reverse(pHead, 3);
+	//PNode pret = K_Group_Reverse(pHead, 3);
 	//pHead = MergeSort(pHead);
-	PrintList(pret);
+	//PNode pret = Rotate_K(pHead, 3);
+	//PrintList(pret);
 	//PrintList(pHead);
 	getchar();
 	return 0;

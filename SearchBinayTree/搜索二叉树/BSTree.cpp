@@ -327,6 +327,36 @@ public:
 		_MidOrder(_pRoot);
 		cout << endl;
 	}
+	
+	//判断一棵树是否是二叉搜索树
+	bool _IsSerachTree(Node* pRoot,  bool flag, int& prev)
+	{
+		if (nullptr == pRoot)
+			return true;
+		if (pRoot->_pLeft == nullptr && flag)
+		{
+			_IsSerachTree(pRoot->_pLeft, flag, prev);
+		}
+		if (pRoot->_value <= prev)
+		{
+			flag = false;
+		}
+		prev = pRoot->_value;
+		if (pRoot->_pRight == nullptr && flag)
+		{
+			_IsSerachTree(pRoot->_pRight, flag, prev);
+		}
+		return flag;
+	}
+	
+	bool IsSerachTree()
+	{
+		Node* pRoot = _pRoot;
+		bool flag = true;
+		int min = INT_MIN;
+		return _IsSerachTree(pRoot , flag, min);
+	}
+	
 protected:
 
 	void _MidOrder(Node* pRoot)
@@ -349,9 +379,10 @@ void Test()
 	   tree.Insert(arr[i], i);
 	cout << tree.GetLastCommonAncestor(tree.Find1(5), tree.Find1(9))->_value << endl;;
 	tree.MidOrder();
-	tree.Remove(5);
-	tree.Remove(4);
-	tree.MidOrder();
+	//tree.Remove(5);
+	//tree.Remove(4);
+	//tree.MidOrder();
+	cout << tree.IsSerachTree() << endl;
 }
 //查找 排序 去重 、
 //判断一个单词是否合法   将合法单词加在树中 在书中找
